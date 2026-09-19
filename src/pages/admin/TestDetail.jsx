@@ -60,7 +60,7 @@ export default function TestDetail() {
   async function reload() {
     const [foundTest, foundSubmissions] = await Promise.all([
       getTest(testId),
-      listSubmissionsForTest(testId),
+      listSubmissionsForTest(testId, user.email),
     ]);
     setTest(foundTest);
     setDisplayName(foundTest?.displayName ?? '');
@@ -137,7 +137,7 @@ export default function TestDetail() {
     setDeleting(true);
     try {
       await deleteTest(testId);
-      navigate('/admin/tests');
+      navigate('/manage/tests');
     } finally {
       setDeleting(false);
     }
@@ -157,7 +157,7 @@ export default function TestDetail() {
   }
 
   async function handleCopyLink() {
-    await copyToClipboard(`${window.location.origin}/start-test?id=${testId}`);
+    await copyToClipboard(`${window.location.origin}/test/${testId}`);
     setCopiedLabel('link');
     setTimeout(() => setCopiedLabel(''), 2000);
   }
@@ -239,10 +239,11 @@ export default function TestDetail() {
 
   if (loading) return <p className="text-slate-500">Loading…</p>;
   if (!test) return <p className="text-slate-500">Test not found.</p>;
+  if (test.createdBy !== user.email) return <p className="text-slate-500">You don't have access to manage this test.</p>;
 
   return (
     <div>
-      <Link to="/admin/tests" className="text-sm text-[#444746] hover:text-[#1F1F1F] mb-4 inline-flex items-center gap-1">
+      <Link to="/manage/tests" className="text-sm text-[#444746] hover:text-[#1F1F1F] mb-4 inline-flex items-center gap-1">
         <i className="fa-solid fa-chevron-left"></i> All tests
       </Link>
 
@@ -289,7 +290,7 @@ export default function TestDetail() {
             <button onClick={handleCopyLink} className="gpill gpill-secondary">
               <i className={`fa-solid ${copiedLabel === 'link' ? 'fa-check' : 'fa-link'}`}></i> {copiedLabel === 'link' ? 'Copied!' : 'Copy Test Link'}
             </button>
-            <Link to={`/admin/${testId}/questions`} className="gpill gpill-secondary">
+            <Link to={`/manage/${testId}/questions`} className="gpill gpill-secondary">
               <i className="fa-solid fa-table-cells"></i> Edit Questions
             </Link>
             {editing ? (

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTestSession } from '../hooks/useTestSession';
-import { findActiveSubmission, getTest, hasUserTakenTest, startTestAttempt } from '../services/firestore';
+import { getTest, hasUserTakenTest, startTestAttempt } from '../services/firestore';
 import { isUserAllowed } from '../services/csv';
 import TriangleBackground from '../components/TriangleBackground';
 import LoadingScreen from '../components/LoadingScreen';
@@ -33,7 +33,7 @@ export default function StartTest() {
       if (cancelled) return;
 
       if (alreadyTaken) {
-        goTo('/submission', {}, { replace: true, state: { reason: 'already-taken' } });
+        goTo('submitted', {}, { replace: true, state: { reason: 'already-taken' } });
         return;
       }
 
@@ -56,17 +56,17 @@ export default function StartTest() {
   const filledFields = [name, studentId].filter((v) => v.trim() !== '').length;
   const progress = (filledFields / totalFields) * 100;
 
-  // The very first Firestore write right after sign-in can occasionally race
-  // the auth token attaching to the Firestore client, getting rejected by
-  // security rules even though the user is genuinely signed in - force a
+  // The very first Cloud Function call right after sign-in can occasionally
+  // race the auth token attaching to the Functions client, getting rejected
+  // as unauthenticated even though the user is genuinely signed in - force a
   // fresh token and retry once before surfacing an error.
   async function startAttemptWithRetry() {
     try {
-      return await startTestAttempt(testId, studentId.trim(), { name: name.trim(), userEmail: user.email });
+      return await startTestAttempt(testId, name.trim(), studentId.trim());
     } catch (err) {
-      if (err?.code !== 'permission-denied') throw err;
+      if (err?.code !== 'functions/unauthenticated') throw err;
       await user.getIdToken(true);
-      return await startTestAttempt(testId, studentId.trim(), { name: name.trim(), userEmail: user.email });
+      return await startTestAttempt(testId, name.trim(), studentId.trim());
     }
   }
 
@@ -76,6 +76,9 @@ export default function StartTest() {
       return;
     }
 
+    // Instant feedback for the common case - the startTest Cloud Function
+    // enforces the same roster check server-side regardless, so this is
+    // purely a UX shortcut, never the actual security boundary.
     if (!isUserAllowed(test.allowedUsers, test.restrictAccess, name, studentId)) {
       setBeginError("You're not on the approved list for this test. Check your name and Student ID, or contact your instructor.");
       return;
@@ -84,12 +87,6 @@ export default function StartTest() {
     setBeginError('');
     setBeginning(true);
     try {
-      const existing = await findActiveSubmission(testId, studentId.trim());
-      if (existing?.testTaken) {
-        goTo('/submission', {}, { replace: true, state: { reason: 'already-taken' } });
-        return;
-      }
-
       const attemptId = await startAttemptWithRetry();
 
       if (test.strictMode && document.documentElement.requestFullscreen) {
@@ -103,12 +100,16 @@ export default function StartTest() {
         }
       }
 
-      goTo('/test', { sid: attemptId });
+      goTo('attempt', { sid: attemptId });
     } catch (err) {
       console.error('Failed to start test attempt:', err);
+      if (err?.code === 'functions/already-exists') {
+        goTo('submitted', {}, { replace: true, state: { reason: 'already-taken' } });
+        return;
+      }
       setBeginError(
-        err?.code === 'permission-denied'
-          ? 'Database rejected the request (permission-denied). The Firestore security rules likely need to be deployed — see firestore.rules.'
+        err?.code === 'functions/permission-denied'
+          ? "You're not on the approved list for this test. Check your name and Student ID, or contact your instructor."
           : `Something went wrong starting the test${err?.code ? ` (${err.code})` : ''}. Please try again.`
       );
     } finally {

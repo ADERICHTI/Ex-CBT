@@ -1,9 +1,13 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import './App.css';
 
-function App() {
+function App({ children }) {
   const location = useLocation();
-  const isFullScreen = location.pathname === '/test' || location.pathname === '/start-test';
+  // Full-screen (no marketing sidebar) for the test-taking flow itself
+  // (/test/:testId and /test/:testId/attempt, each of which brings its own
+  // layout) but not /test/:testId/submitted, which keeps the branded panel
+  // like the sign-in screen does.
+  const isFullScreen = /^\/test\/[^/]+(\/attempt)?$/.test(location.pathname);
 
   return (
     <div id="app-container" className={isFullScreen ? 'test-mode' : ''}>
@@ -41,7 +45,7 @@ function App() {
       </aside>
 
       <div id="pagesWrap">
-        <Outlet />
+        {children ?? <Outlet />}
       </div>
     </div>
   );

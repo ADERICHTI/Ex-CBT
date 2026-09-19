@@ -23,7 +23,7 @@ export default function Submission() {
       if (cancelled) return;
 
       if (!taken) {
-        goTo('/start-test', {}, { replace: true });
+        goTo('', {}, { replace: true });
         return;
       }
       setChecking(false);

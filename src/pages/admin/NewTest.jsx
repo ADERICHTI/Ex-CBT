@@ -111,7 +111,7 @@ export default function NewTest() {
         strictMode,
         createdBy: user.email,
       });
-      navigate(`/admin/${testId}`);
+      navigate(`/manage/${testId}`);
     } catch {
       setFormError('Could not create the test. Please try again.');
     } finally {

@@ -3,83 +3,93 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-      function isSignedIn() {
-            return request.auth != null;
-                }
+    function isSignedIn() {
+      return request.auth != null;
+    }
 
-                    function isAdmin() {
-                          return isSignedIn() &&
-                                  exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
-                                      }
+    function isOwnUserDoc(email) {
+      return isSignedIn() && request.auth.token.email == email;
+    }
 
-                                          function isOwnUserDoc(email) {
-                                                return isSignedIn() && request.auth.token.email == email;
-                                                    }
+    // Ownership replaces the old fixed admin allowlist: whoever created a
+    // test is the only one who can manage it. createdBy is set once at
+    // creation (see createTest in src/services/firestore.js) and never
+    // changes. Only used for single-document checks (get/update/delete on
+    // one test, or the answerKey subdoc) - never inside a list/collectionGroup
+    // rule, where a get() per candidate document isn't how Firestore proves
+    // a query is safe to run (see the testOwnerEmail comment below).
+    function isTestOwner(testId) {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/tests/$(testId)).data.createdBy == request.auth.token.email;
+    }
 
-                                                        // A student's submission batch bumps tests/{testId}.submissionCount by
-                                                            // exactly 1 and touches nothing else on the test doc - everything else
-                                                                // about a test stays admin-only.
-                                                                    function isSubmissionCounterBump() {
-                                                                          return isSignedIn() &&
-                                                                                  request.resource.data.diff(resource.data).affectedKeys().hasOnly(['submissionCount', 'lastSubmissionAt']) &&
-                                                                                          request.resource.data.submissionCount == resource.data.submissionCount + 1;
-                                                                                              }
+    // Test metadata + questions (answer-free - see the answerKey subcollection
+    // below). Any signed-in user can open a test via its shared link; only the
+    // owner can create/edit/delete it, and only the owner can list their own
+    // tests (the query behind listTests()/TestsList always adds a matching
+    // where('createdBy', ...) clause, which is what lets Firestore prove this
+    // rule holds for every document in that result set).
+    match /tests/{testId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn() && resource.data.createdBy == request.auth.token.email;
+      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.token.email;
+      allow update, delete: if isTestOwner(testId);
 
-                                                                                                  // Admin allowlist. Existence of the doc is the only signal that matters.
-                                                                                                      // Never writable from the client - seed via the emulator UI / firebase console.
-                                                                                                          // Every signed-in user must be able to check their OWN doc (that's how the
-                                                                                                              // client knows whether to show admin UI) - only admins can read others' or
-                                                                                                                  // list the whole collection, so the allowlist itself isn't enumerable.
-                                                                                                                      match /admins/{email} {
-                                                                                                                            allow get: if isSignedIn() && (request.auth.token.email == email || isAdmin());
-                                                                                                                                  allow list: if isAdmin();
-                                                                                                                                        allow write: if false;
-                                                                                                                                            }
+      // tests/{testId}/answerKey/data - the correct answers, index-aligned
+      // with tests/{testId}.questions. Owner-only: this is the whole point of
+      // splitting it out of the test doc - a test-taker's client must never
+      // be able to read it. Cloud Functions grade via the Admin SDK, which
+      // bypasses these rules entirely.
+      //
+      // create is checked against the doc's own (denormalized) createdBy
+      // field, not isTestOwner(testId) - createTest() writes this doc in the
+      // same batch as tests/{testId} itself, and within one batch commit
+      // every mutation's rule is evaluated against the pre-batch database
+      // state, so get()-ing the parent test doc here would always see it as
+      // not-yet-existing. read/update/delete always happen after the parent
+      // already exists, so isTestOwner(testId) (a get()) is safe there.
+      match /answerKey/{doc} {
+        allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.token.email;
+        allow read, update, delete: if isTestOwner(testId);
+      }
 
-                                                                                                                                                // Test metadata, created/edited/deleted by admins. Must be signed in to read,
-                                                                                                                                                    // matching "redirect to auth before anything else" in the routing rules.
-                                                                                                                                                        match /tests/{testId} {
-                                                                                                                                                              allow read: if isSignedIn();
-                                                                                                                                                                    allow create, delete: if isAdmin();
-                                                                                                                                                                          allow update: if isAdmin() || isSubmissionCounterBump();
+      // tests/{testId}/submissions/{studentId} - one doc per test-taker,
+      // keyed by their (normalized) Student ID.
+      //
+      // testOwnerEmail is a denormalized copy of the parent test's createdBy
+      // so owner-scoped list queries (listSubmissionsForTest, the
+      // dashboard's listRecentSubmissions) stay proveable: Firestore can
+      // only skip evaluating a list rule against every document in the
+      // database when the query's own where() clause matches the rule's
+      // condition on a plain field - a get() inside the rule can't be
+      // matched to a query filter that way.
+      match /submissions/{submissionId} {
+        allow read: if isSignedIn() &&
+          (resource.data.userEmail == request.auth.token.email ||
+           resource.data.testOwnerEmail == request.auth.token.email);
 
-                                                                                                                                                                                // tests/{testId}/submissions/{studentId_time} - one doc per attempt.
-                                                                                                                                                                                      match /submissions/{submissionId} {
-                                                                                                                                                                                              allow read: if isSignedIn();
+        // Starting an attempt (roster check + dedupe), finalizing it
+        // (grading), and deleting it all go through Cloud Functions
+        // (startTest / submitTest / deleteSubmission) using the Admin SDK,
+        // which bypasses these rules entirely - none of those operations
+        // can be trusted to a direct client write, so there's nothing left
+        // for a client to legitimately do here directly.
+        allow write: if false;
+      }
+    }
 
-                                                                                                                                                                                                      allow create: if isSignedIn() &&
-                                                                                                                                                                                                                request.resource.data.userEmail == request.auth.token.email &&
-                                                                                                                                                                                                                          request.resource.data.testTaken == false;
+    // Collection-group access for the dashboard's cross-test recent-
+    // submissions query. Fixed-path rules above don't apply to
+    // collectionGroup() queries - Firestore only honors {path=**} wildcard
+    // rules for those. Same testOwnerEmail field, same reasoning as above:
+    // listRecentSubmissions() always adds a matching where('testOwnerEmail', ...).
+    match /{path=**}/submissions/{submissionId} {
+      allow read: if isSignedIn() && resource.data.testOwnerEmail == request.auth.token.email;
+    }
 
-                                                                                                                                                                                                                                  // Only the student who started it can submit, only while it's still
-                                                                                                                                                                                                                                          // unsubmitted - prevents re-submitting or editing someone else's record.
-                                                                                                                                                                                                                                                  allow update: if isAdmin() || (
-                                                                                                                                                                                                                                                            isSignedIn() &&
-                                                                                                                                                                                                                                                                      resource.data.userEmail == request.auth.token.email &&
-                                                                                                                                                                                                                                                                                resource.data.testTaken == false &&
-                                                                                                                                                                                                                                                                                          request.resource.data.userEmail == resource.data.userEmail
-                                                                                                                                                                                                                                                                                                  );
-
-                                                                                                                                                                                                                                                                                                          allow delete: if isAdmin();
-                                                                                                                                                                                                                                                                                                                }
-                                                                                                                                                                                                                                                                                                                    }
-
-                                                                                                                                                                                                                                                                                                                        // Collection-group access for the admin dashboard's cross-test
-                                                                                                                                                                                                                                                                                                                            // submissions queries. Fixed-path rules above don't apply to
-                                                                                                                                                                                                                                                                                                                                // collectionGroup() queries - Firestore only honors {path=**} wildcard
-                                                                                                                                                                                                                                                                                                                                    // rules for those. Admin-only: a signed-in student querying the group
-                                                                                                                                                                                                                                                                                                                                        // directly would otherwise enumerate every submission across all tests.
-                                                                                                                                                                                                                                                                                                                                            match /{path=**}/submissions/{submissionId} {
-                                                                                                                                                                                                                                                                                                                                                  allow read: if isAdmin();
-                                                                                                                                                                                                                                                                                                                                                      }
-
-                                                                                                                                                                                                                                                                                                                                                          // users/{email} - doc id is the signed-in user's email, per spec. Admins
-                                                                                                                                                                                                                                                                                                                                                              // can also write here (needed to clear testsTaken when they delete a
-                                                                                                                                                                                                                                                                                                                                                                  // student's submission from the admin page).
-                                                                                                                                                                                                                                                                                                                                                                      match /users/{email} {
-                                                                                                                                                                                                                                                                                                                                                                            allow read, write: if isOwnUserDoc(email);
-                                                                                                                                                                                                                                                                                                                                                                                  allow read, write: if isAdmin();
-                                                                                                                                                                                                                                                                                                                                                                                      }
-                                                                                                                                                                                                                                                                                                                                                                                        }
-                                                                                                                                                                                                                                                                                                                                                                                        }
-                                                                                                                                                                                                                                                                                                                                                                                        
+    // users/{email} - doc id is the signed-in user's email, per spec.
+    match /users/{email} {
+      allow read, write: if isOwnUserDoc(email);
+    }
+  }
+}

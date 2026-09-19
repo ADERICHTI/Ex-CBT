@@ -1,31 +1,23 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../utility/config';
-import { isAdminEmail } from '../services/firestore';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
       setUser(nextUser);
-      try {
-        setIsAdmin(nextUser ? await isAdminEmail(nextUser.email) : false);
-      } catch {
-        // A permission hiccup here must never leave the app stuck loading forever.
-        setIsAdmin(false);
-      }
       setLoading(false);
     });
     return unsubscribe;
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin, loading }}>
+    <AuthContext.Provider value={{ user, loading }}>
       {children}
     </AuthContext.Provider>
   );

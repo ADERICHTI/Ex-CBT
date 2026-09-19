@@ -6,11 +6,11 @@ import { useAuth } from '../../context/AuthContext';
 import './Admin.css';
 
 const NAV_ITEMS = [
-  { to: '/admin', label: 'Dashboard', icon: 'fa-solid fa-gauge', end: true },
-  { to: '/admin/tests', label: 'Tests', icon: 'fa-solid fa-file-lines' },
+  { to: '/', label: 'Dashboard', icon: 'fa-solid fa-gauge', end: true },
+  { to: '/manage/tests', label: 'Tests', icon: 'fa-solid fa-file-lines' },
 ];
 
-export default function AdminLayout() {
+export default function AdminLayout({ children }) {
   const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -105,7 +105,7 @@ export default function AdminLayout() {
         </aside>
 
         <main className="admin-main">
-          <Outlet />
+          {children ?? <Outlet />}
         </main>
       </div>
     </div>

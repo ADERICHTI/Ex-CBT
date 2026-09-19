@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useTestSession } from '../hooks/useTestSession';
 import { getSubmission, getTest, submitTestAttempt } from '../services/firestore';
 import LoadingScreen from '../components/LoadingScreen';
 
 export default function TestInterface() {
-  const { user } = useAuth();
   const toast = useToast();
-  // The "sid" URL param holds the attempt/submission doc id (studentId_time),
-  // set by StartTest.jsx when it creates the attempt - not the raw student id.
+  // The "sid" URL param holds the attempt/submission doc id (the normalized
+  // student id), set by StartTest.jsx when it creates the attempt.
   const { testId, studentId: attemptId, goTo } = useTestSession();
 
   const [status, setStatus] = useState('loading'); // loading | blocked | ready
@@ -38,7 +36,7 @@ export default function TestInterface() {
 
     async function load() {
       if (!testId || !attemptId) {
-        goTo('/start-test', {}, { replace: true });
+        goTo('', {}, { replace: true });
         return;
       }
 
@@ -49,16 +47,16 @@ export default function TestInterface() {
       if (cancelled) return;
 
       if (!foundTest || foundTest.active === false) {
-        goTo('/start-test', {}, { replace: true });
+        goTo('', {}, { replace: true });
         return;
       }
       if (!attempt) {
         // No active attempt for this student id - they didn't come through StartTest.
-        goTo('/start-test', {}, { replace: true });
+        goTo('', {}, { replace: true });
         return;
       }
       if (attempt.testTaken) {
-        goTo('/submission', {}, { replace: true, state: { reason: 'already-taken' } });
+        goTo('submitted', {}, { replace: true, state: { reason: 'already-taken' } });
         return;
       }
 
@@ -142,30 +140,17 @@ export default function TestInterface() {
 
   const questions = test.questions;
 
-  function gradeAndBuildAnswers() {
-    const answers = questions.map((_, i) => userAnswers[i] ?? null);
-    const score = questions.reduce((total, q, i) => {
-      const picked = (answers[i] ?? '').toString().trim().toLowerCase();
-      const correct = (q.answer ?? '').toString().trim().toLowerCase();
-      return picked && picked === correct ? total + 1 : total;
-    }, 0);
-    return { answers, score };
-  }
-
+  // Grading itself happens server-side (functions/index.js submitTest) so the
+  // answer key never reaches this browser - this just hands off the
+  // student's raw picks, index-aligned with `questions`.
   async function handleSubmit() {
     if (submitting) return;
     setSubmitting(true);
     clearInterval(timerRef.current);
     try {
-      const { answers, score } = gradeAndBuildAnswers();
-      await submitTestAttempt({
-        testId,
-        attemptId,
-        userEmail: user.email,
-        answers,
-        score,
-      });
-      goTo('/submission', {}, { replace: true, state: { reason: 'submitted' } });
+      const answers = questions.map((_, i) => userAnswers[i] ?? null);
+      await submitTestAttempt({ testId, attemptId, answers });
+      goTo('submitted', {}, { replace: true, state: { reason: 'submitted' } });
     } finally {
       setSubmitting(false);
     }
@@ -178,7 +163,7 @@ export default function TestInterface() {
   function confirmExit() {
     setShowExitModal(false);
     clearInterval(timerRef.current);
-    goTo('/start-test');
+    goTo('');
   }
 
   function selectOption(option) {

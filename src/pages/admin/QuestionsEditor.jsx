@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { getTest, updateTest } from '../../services/firestore';
+import { getTest, getTestAnswerKey, updateTest } from '../../services/firestore';
 import { downloadCsv, downloadJson, normalizeQuestion, questionsToCsv } from '../../services/csv';
 import SpreadsheetTable from '../../components/SpreadsheetTable';
 
@@ -20,9 +20,10 @@ export default function QuestionsEditor() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    getTest(testId).then((found) => {
+    Promise.all([getTest(testId), getTestAnswerKey(testId)]).then(([found, answers]) => {
       setTest(found);
-      setRows((found?.questions ?? []).map(toRow));
+      const questionsWithAnswers = (found?.questions ?? []).map((q, i) => ({ ...q, answer: answers[i] ?? '' }));
+      setRows(questionsWithAnswers.map(toRow));
       setLoading(false);
     });
   }, [testId]);
@@ -73,10 +74,11 @@ export default function QuestionsEditor() {
 
   if (loading) return <p className="text-slate-500">Loading…</p>;
   if (!test) return <p className="text-slate-500">Test not found.</p>;
+  if (test.createdBy !== user.email) return <p className="text-slate-500">You don't have access to manage this test.</p>;
 
   return (
     <div>
-      <Link to={`/admin/${testId}`} className="text-sm text-[#444746] hover:text-[#1F1F1F] mb-4 inline-flex items-center gap-1">
+      <Link to={`/manage/${testId}`} className="text-sm text-[#444746] hover:text-[#1F1F1F] mb-4 inline-flex items-center gap-1">
         <i className="fa-solid fa-chevron-left"></i> {test.displayName}
       </Link>
 

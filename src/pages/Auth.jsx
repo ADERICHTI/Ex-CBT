@@ -51,11 +51,9 @@ export default function Auth() {
   const [linkEmail, setLinkEmail] = useState('');
 
   function buildEmailLinkUrl() {
-    const url = new URL('/auth', window.location.origin);
+    const url = new URL('/', window.location.origin);
     const redirect = searchParams.get('redirect');
-    const id = searchParams.get('id');
     if (redirect) url.searchParams.set('redirect', redirect);
-    if (id) url.searchParams.set('id', id);
     return url.toString();
   }
 
@@ -65,15 +63,7 @@ export default function Auth() {
       photoURL: user.photoURL,
     });
 
-    const redirect = searchParams.get('redirect');
-    const id = searchParams.get('id');
-    if (redirect) {
-      navigate(redirect);
-    } else if (id) {
-      navigate(`/start-test?id=${encodeURIComponent(id)}`);
-    } else {
-      navigate('/start-test');
-    }
+    navigate(searchParams.get('redirect') || '/');
   }
 
   async function completeEmailLinkSignIn(emailToUse) {

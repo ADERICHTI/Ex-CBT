@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { listTests } from '../../services/firestore';
 
 function toDate(ts) {
@@ -7,22 +8,23 @@ function toDate(ts) {
 }
 
 export default function TestsList() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [tests, setTests] = useState([]);
   const [openId, setOpenId] = useState(null);
 
   useEffect(() => {
-    listTests().then((data) => {
+    listTests(user.email).then((data) => {
       setTests(data);
       setLoading(false);
     });
-  }, []);
+  }, [user.email]);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-medium text-[#1F1F1F]">Tests</h1>
-        <Link to="/admin/tests/new" className="btn-primary !w-auto px-4 py-2 text-sm flex items-center gap-2">
+        <Link to="/manage/tests/new" className="btn-primary !w-auto px-4 py-2 text-sm flex items-center gap-2">
           <i className="fa-solid fa-plus"></i> New Test
         </Link>
       </div>
@@ -68,7 +70,7 @@ export default function TestsList() {
                         <div className="font-semibold text-slate-700">{toDate(test.createdAt)?.toLocaleDateString() ?? '—'}</div>
                       </div>
                     </div>
-                    <Link to={`/admin/${test.id}`} className="text-sm font-medium text-[#0B57D0] hover:underline">
+                    <Link to={`/manage/${test.id}`} className="text-sm font-medium text-[#0B57D0] hover:underline">
                       Manage test <i className="fa-solid fa-arrow-right ml-1"></i>
                     </Link>
                   </div>

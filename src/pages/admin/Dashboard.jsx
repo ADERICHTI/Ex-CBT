@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import StatTile from '../../components/StatTile';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { listRecentSubmissions, listRecentlyCreatedTests, listRecentlyEditedTests, listTests } from '../../services/firestore';
 
@@ -35,6 +36,7 @@ function timeAgo(date) {
 }
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [tests, setTests] = useState([]);
@@ -46,10 +48,10 @@ export default function Dashboard() {
   useEffect(() => {
     async function load() {
       const sources = [
-        { label: 'tests', fn: () => listTests(), set: setTests },
-        { label: 'recent submissions', fn: () => listRecentSubmissions(30), set: setRecentSubmissions },
-        { label: 'recently created tests', fn: () => listRecentlyCreatedTests(10), set: setRecentCreated },
-        { label: 'recently edited tests', fn: () => listRecentlyEditedTests(10), set: setRecentEdited },
+        { label: 'tests', fn: () => listTests(user.email), set: setTests },
+        { label: 'recent submissions', fn: () => listRecentSubmissions(user.email, 30), set: setRecentSubmissions },
+        { label: 'recently created tests', fn: () => listRecentlyCreatedTests(user.email, 10), set: setRecentCreated },
+        { label: 'recently edited tests', fn: () => listRecentlyEditedTests(user.email, 10), set: setRecentEdited },
       ];
       const results = await Promise.allSettled(sources.map((s) => s.fn()));
 
@@ -68,7 +70,7 @@ export default function Dashboard() {
     }
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user.email]);
 
   const metrics = useMemo(() => {
     const totalTests = tests.length;
@@ -135,7 +137,7 @@ export default function Dashboard() {
         <RecentCard title="Recently Created Tests" empty="No tests created in this range.">
           {filteredCreated.map((t) => (
             <li key={t.id} className="py-2 text-sm">
-              <Link to={`/admin/${t.id}`} className="font-medium text-[#0B57D0] hover:underline truncate block">{t.displayName}</Link>
+              <Link to={`/manage/${t.id}`} className="font-medium text-[#0B57D0] hover:underline truncate block">{t.displayName}</Link>
               <span className="text-xs text-slate-400">{timeAgo(toDate(t.createdAt))}</span>
             </li>
           ))}
@@ -144,7 +146,7 @@ export default function Dashboard() {
         <RecentCard title="Recently Edited Tests" empty="No edits in this range.">
           {filteredEdited.map((t) => (
             <li key={t.id} className="py-2 text-sm">
-              <Link to={`/admin/${t.id}`} className="font-medium text-[#0B57D0] hover:underline truncate block">{t.displayName}</Link>
+              <Link to={`/manage/${t.id}`} className="font-medium text-[#0B57D0] hover:underline truncate block">{t.displayName}</Link>
               <span className="text-xs text-slate-400">{timeAgo(toDate(t.updatedAt))}</span>
             </li>
           ))}
