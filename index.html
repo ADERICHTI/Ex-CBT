@@ -8,6 +8,24 @@
 
     <!-- Tailwind CSS for Layout -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Orange-amber brand colour; mirrors the --brand-* tokens in src/index.css
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                DEFAULT: '#EA7A10',
+                dark: '#C2610A',
+                soft: '#FFF3E6',
+                line: '#FAD3A8',
+                ink: '#7A3A05',
+              },
+            },
+          },
+        },
+      };
+    </script>
 
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

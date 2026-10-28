@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { deleteSubmission, deleteTest, getTest, listSubmissionsForTest, updateTest } from '../../services/firestore';
+import { deleteSubmission, deleteTest, getTest, getTestRoster, listSubmissionsForTest, updateTest } from '../../services/firestore';
 import {
   ALLOWED_USERS_CSV_TEMPLATE,
   allowedUsersToCsv,
@@ -58,14 +58,16 @@ export default function TestDetail() {
   const allowedFileInputRef = useRef(null);
 
   async function reload() {
-    const [foundTest, foundSubmissions] = await Promise.all([
+    const [foundTest, roster, foundSubmissions] = await Promise.all([
       getTest(testId),
+      getTestRoster(testId),
       listSubmissionsForTest(testId, user.email),
     ]);
-    setTest(foundTest);
+    // Merged back in so the rest of this page keeps reading test.allowedUsers.
+    setTest(foundTest && { ...foundTest, allowedUsers: roster });
     setDisplayName(foundTest?.displayName ?? '');
     setMinutes(foundTest?.minutes ?? 0);
-    setAllowedRows((foundTest?.allowedUsers ?? []).map((u, i) => normalizeAllowedUser(u, i)));
+    setAllowedRows(roster.map((u, i) => normalizeAllowedUser(u, i)));
     setSubmissions(foundSubmissions);
     setLoading(false);
   }
@@ -237,13 +239,13 @@ export default function TestDetail() {
     downloadCsv(`${testId}-submissions.csv`, submissionsToCsv(rows));
   }
 
-  if (loading) return <p className="text-slate-500">Loading…</p>;
-  if (!test) return <p className="text-slate-500">Test not found.</p>;
-  if (test.createdBy !== user.email) return <p className="text-slate-500">You don't have access to manage this test.</p>;
+  if (loading) return <p className="text-[#00000080]">Loading…</p>;
+  if (!test) return <p className="text-[#00000080]">Test not found.</p>;
+  if (test.createdBy !== user.email) return <p className="text-[#00000080]">You don't have access to manage this test.</p>;
 
   return (
     <div>
-      <Link to="/manage/tests" className="text-sm text-[#444746] hover:text-[#1F1F1F] mb-4 inline-flex items-center gap-1">
+      <Link to="/manage/tests" className="text-sm text-[#00000099] hover:text-[#1F1F1F] mb-4 inline-flex items-center gap-1">
         <i className="fa-solid fa-chevron-left"></i> All tests
       </Link>
 
@@ -256,7 +258,7 @@ export default function TestDetail() {
             ) : (
               <h1 className="text-2xl font-medium text-[#1F1F1F]">{test.displayName}</h1>
             )}
-            <p className="text-xs font-mono text-[#444746] mt-1">{test.id}</p>
+            <p className="text-xs font-mono text-[#00000099] mt-1">{test.id}</p>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
@@ -269,7 +271,7 @@ export default function TestDetail() {
               {togglingActive ? (
                 <i className="fa-solid fa-circle-notch fa-spin text-[10px]"></i>
               ) : (
-                <span className={`w-1.5 h-1.5 rounded-full ${test.active !== false ? 'bg-[#1E7E34]' : 'bg-[#444746]'}`}></span>
+                <span className={`w-1.5 h-1.5 rounded-full ${test.active !== false ? 'bg-[#1E7E34]' : 'bg-[#00000099]'}`}></span>
               )}
               {test.active !== false ? 'Active' : 'Disabled'}
             </button>
@@ -308,13 +310,13 @@ export default function TestDetail() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-sm border-t border-[#F1F3F4] pt-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-sm border-t border-[#00000008] pt-4">
           <div>
-            <div className="text-xs text-[#444746] uppercase tracking-wide mb-1">Questions</div>
+            <div className="text-xs text-[#00000099] uppercase tracking-wide mb-1">Questions</div>
             <div className="font-semibold text-[#1F1F1F]">{test.questions?.length ?? 0}</div>
           </div>
           <div>
-            <div className="text-xs text-[#444746] uppercase tracking-wide mb-1">Time Limit</div>
+            <div className="text-xs text-[#00000099] uppercase tracking-wide mb-1">Time Limit</div>
             {editing ? (
               <input type="number" className="input-field !py-1 !px-2 w-20" value={minutes} onChange={(e) => setMinutes(e.target.value)} />
             ) : (
@@ -322,11 +324,11 @@ export default function TestDetail() {
             )}
           </div>
           <div>
-            <div className="text-xs text-[#444746] uppercase tracking-wide mb-1">Submissions</div>
+            <div className="text-xs text-[#00000099] uppercase tracking-wide mb-1">Submissions</div>
             <div className="font-semibold text-[#1F1F1F]">{test.submissionCount ?? 0}</div>
           </div>
           <div>
-            <div className="text-xs text-[#444746] uppercase tracking-wide mb-1">Created</div>
+            <div className="text-xs text-[#00000099] uppercase tracking-wide mb-1">Created</div>
             <div className="font-semibold text-[#1F1F1F]">{toDate(test.createdAt)?.toLocaleDateString() ?? '—'}</div>
           </div>
         </div>
@@ -340,7 +342,7 @@ export default function TestDetail() {
             onClick={() => setAccessOpen((open) => !open)}
             className="flex items-center gap-2 text-left"
           >
-            <i className={`fa-solid fa-chevron-right text-xs text-[#444746] transition-transform ${accessOpen ? 'rotate-90' : ''}`}></i>
+            <i className={`fa-solid fa-chevron-right text-xs text-[#00000099] transition-transform ${accessOpen ? 'rotate-90' : ''}`}></i>
             <h2 className="text-lg font-medium text-[#1F1F1F]">Access Restriction</h2>
           </button>
           {!accessEditing && (
@@ -355,7 +357,7 @@ export default function TestDetail() {
                 {togglingRestrict ? (
                   <i className="fa-solid fa-circle-notch fa-spin text-[10px]"></i>
                 ) : (
-                  <span className={`w-1.5 h-1.5 rounded-full ${restrictAccess ? 'bg-[#1E7E34]' : 'bg-[#444746]'}`}></span>
+                  <span className={`w-1.5 h-1.5 rounded-full ${restrictAccess ? 'bg-[#1E7E34]' : 'bg-[#00000099]'}`}></span>
                 )}
                 Restriction {restrictAccess ? 'On' : 'Off'}
               </button>
@@ -373,7 +375,7 @@ export default function TestDetail() {
 
         {accessOpen && (!accessEditing ? (
           <>
-            <p className="text-sm text-[#444746] mt-1">
+            <p className="text-sm text-[#00000099] mt-1">
               {restrictAccess && test.allowedUsers?.length ? (
                 <><span className="font-semibold text-[#1F1F1F]">{test.allowedUsers.length} student{test.allowedUsers.length === 1 ? '' : 's'}</span> may start this test — everyone else is blocked.</>
               ) : test.allowedUsers?.length ? (
@@ -385,7 +387,7 @@ export default function TestDetail() {
             {test.allowedUsers?.length > 0 && (
               <ul className="mt-3 flex flex-wrap gap-2">
                 {test.allowedUsers.map((u) => (
-                  <li key={u.studentId} className="text-xs bg-[#F1F3F4] rounded-full px-3 py-1 text-[#444746]">
+                  <li key={u.studentId} className="text-xs bg-[#00000008] rounded-full px-3 py-1 text-[#00000099]">
                     {u.name} <span className="font-mono">({u.studentId})</span>
                   </li>
                 ))}
@@ -404,12 +406,12 @@ export default function TestDetail() {
                 </button>
                 <input ref={allowedFileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleAllowedFile} />
               </div>
-              <button type="button" onClick={handleCopyAllowedTemplate} className="text-xs font-medium text-[#0B57D0] hover:underline">
+              <button type="button" onClick={handleCopyAllowedTemplate} className="text-xs font-medium text-brand hover:underline">
                 {copiedLabel === 'template' ? 'Copied!' : 'Copy CSV template'}
               </button>
             </div>
 
-            <p className="text-xs text-[#444746] mb-3">Clear the list entirely and save to reopen this test to anyone with the link.</p>
+            <p className="text-xs text-[#00000099] mb-3">Clear the list entirely and save to reopen this test to anyone with the link.</p>
 
             {allowedParseError && <p className="text-sm text-red-500 mb-3">{allowedParseError}</p>}
 
@@ -429,7 +431,7 @@ export default function TestDetail() {
             />
 
             <div className="flex gap-3 mt-4">
-              <button onClick={handleCancelAccessEdit} className="px-4 py-2.5 rounded-full text-[#444746] text-sm font-medium hover:bg-[#F1F3F4]">Cancel</button>
+              <button onClick={handleCancelAccessEdit} className="px-4 py-2.5 rounded-full text-[#00000099] text-sm font-medium hover:bg-[#00000008]">Cancel</button>
               <button onClick={handleSaveAccess} disabled={accessSaving || invalidAllowedCount > 0} className="gpill gpill-primary !px-5 !py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                 {accessSaving ? 'Saving…' : 'Save'}
               </button>
@@ -446,7 +448,7 @@ export default function TestDetail() {
             onClick={() => setSubmissionsOpen((open) => !open)}
             className="flex items-center gap-2 text-left"
           >
-            <i className={`fa-solid fa-chevron-right text-xs text-[#444746] transition-transform ${submissionsOpen ? 'rotate-90' : ''}`}></i>
+            <i className={`fa-solid fa-chevron-right text-xs text-[#00000099] transition-transform ${submissionsOpen ? 'rotate-90' : ''}`}></i>
             <h2 className="text-lg font-medium text-[#1F1F1F]">Submissions</h2>
           </button>
           {submissionsOpen && (
@@ -457,13 +459,13 @@ export default function TestDetail() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-              <label className="flex items-center gap-1.5 text-xs text-[#444746]">
+              <label className="flex items-center gap-1.5 text-xs text-[#00000099]">
                 <input type="checkbox" checked={submittedOnly} onChange={(e) => setSubmittedOnly(e.target.checked)} />
                 Submitted only
               </label>
-              <div className="flex rounded-full bg-[#F1F3F4] p-1">
-                <button onClick={() => setView('list')} className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${view === 'list' ? 'bg-white text-[#1F1F1F] shadow-sm' : 'text-[#444746]'}`}>List</button>
-                <button onClick={() => setView('spreadsheet')} className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${view === 'spreadsheet' ? 'bg-white text-[#1F1F1F] shadow-sm' : 'text-[#444746]'}`}>Spreadsheet</button>
+              <div className="flex rounded-full bg-[#00000008] p-1">
+                <button onClick={() => setView('list')} className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${view === 'list' ? 'bg-white text-[#1F1F1F] shadow-sm' : 'text-[#00000099]'}`}>List</button>
+                <button onClick={() => setView('spreadsheet')} className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${view === 'spreadsheet' ? 'bg-white text-[#1F1F1F] shadow-sm' : 'text-[#00000099]'}`}>Spreadsheet</button>
               </div>
               <button onClick={handleDownloadCsv} className="gpill gpill-neutral">
                 <i className="fa-solid fa-download"></i> CSV
@@ -490,13 +492,13 @@ export default function TestDetail() {
             emptyMessage="No submissions match your filters."
           />
         ) : (
-          <ul className="divide-y divide-[#F1F3F4]">
-            {filteredSubmissions.length === 0 && <p className="text-sm text-[#444746] py-8 text-center">No submissions match your filters.</p>}
+          <ul className="divide-y divide-[#00000008]">
+            {filteredSubmissions.length === 0 && <p className="text-sm text-[#00000099] py-8 text-center">No submissions match your filters.</p>}
             {filteredSubmissions.map((s) => (
               <li key={s.id} className="flex items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
-                  <div className="font-medium text-[#1F1F1F] truncate">{s.name} <span className="text-[#444746] font-mono text-xs">({s.studentId})</span></div>
-                  <div className="text-xs text-[#444746]">{s.testTaken ? `Submitted ${toDate(s.submittedAt)?.toLocaleString() ?? ''}` : 'In progress / not submitted'}</div>
+                  <div className="font-medium text-[#1F1F1F] truncate">{s.name} <span className="text-[#00000099] font-mono text-xs">({s.studentId})</span></div>
+                  <div className="text-xs text-[#00000099]">{s.testTaken ? `Submitted ${toDate(s.submittedAt)?.toLocaleString() ?? ''}` : 'In progress / not submitted'}</div>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
                   {s.testTaken && (
@@ -516,7 +518,7 @@ export default function TestDetail() {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-6 z-50">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
             <h3 className="font-medium text-[#1F1F1F] text-lg mb-2">Delete this submission?</h3>
-            <p className="text-sm text-[#444746] mb-4">
+            <p className="text-sm text-[#00000099] mb-4">
               This removes <span className="font-semibold text-[#1F1F1F]">{deleteSubmissionTarget.name}</span>'s attempt ({deleteSubmissionTarget.studentId}) permanently. Type the test ID <span className="font-mono font-semibold">{testId}</span> to confirm.
             </p>
             <input
@@ -526,7 +528,7 @@ export default function TestDetail() {
               placeholder={testId}
             />
             <div className="flex gap-3">
-              <button onClick={() => { setDeleteSubmissionTarget(null); setDeleteSubmissionConfirmText(''); }} className="flex-1 py-2.5 rounded-full text-[#444746] font-medium hover:bg-[#F1F3F4]">Cancel</button>
+              <button onClick={() => { setDeleteSubmissionTarget(null); setDeleteSubmissionConfirmText(''); }} className="flex-1 py-2.5 rounded-full text-[#00000099] font-medium hover:bg-[#00000008]">Cancel</button>
               <button
                 onClick={handleDeleteSubmission}
                 disabled={deleteSubmissionConfirmText !== testId || deletingSubmission}
@@ -543,7 +545,7 @@ export default function TestDetail() {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-6 z-50">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
             <h3 className="font-medium text-[#1F1F1F] text-lg mb-2">Delete this test?</h3>
-            <p className="text-sm text-[#444746] mb-4">This can't be undone. Type <span className="font-mono font-semibold">{testId}</span> to confirm.</p>
+            <p className="text-sm text-[#00000099] mb-4">This can't be undone. Type <span className="font-mono font-semibold">{testId}</span> to confirm.</p>
             <input
               className="input-field mb-4"
               value={deleteConfirmText}
@@ -551,7 +553,7 @@ export default function TestDetail() {
               placeholder={testId}
             />
             <div className="flex gap-3">
-              <button onClick={() => { setDeleteOpen(false); setDeleteConfirmText(''); }} className="flex-1 py-2.5 rounded-full text-[#444746] font-medium hover:bg-[#F1F3F4]">Cancel</button>
+              <button onClick={() => { setDeleteOpen(false); setDeleteConfirmText(''); }} className="flex-1 py-2.5 rounded-full text-[#00000099] font-medium hover:bg-[#00000008]">Cancel</button>
               <button
                 onClick={handleDelete}
                 disabled={deleteConfirmText !== testId || deleting}

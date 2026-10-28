@@ -1,25 +1,39 @@
 :root {
-  /* Material 3 -inspired design tokens, shared by every stylesheet in the app */
-  --gm-surface: #FFFFFF;
-  --gm-surface-container: #F1F3F4;
-  --gm-on-surface: #1F1F1F;
-  --gm-on-surface-variant: #444746;
-  --gm-outline: #DADCE0;
+  /* Minimalist design tokens (from mnldsg): monochrome, translucent blacks on
+     an off-white canvas, hairline dividers and near-invisible shadows. The
+     --gm-* names are kept so every stylesheet picks the new look up as-is. */
+  --mn-canvas: #fbfcff;
+  --mn-hairline: #00000008;
+  --mn-faint: #00000015;
 
-  --gm-primary: #0B57D0;
-  --gm-primary-dark: #0842A0;
+  /* Brand: orange-amber, used for actions/selection/active state only */
+  --brand: #EA7A10;
+  --brand-dark: #C2610A;
+  --brand-soft: #FFF3E6;
+  --brand-soft-hover: #FFE6CC;
+  --brand-line: #FAD3A8;
+  --brand-ink: #7A3A05;
+
+  --gm-surface: #FFFFFF;
+  --gm-surface-container: #00000008;
+  --gm-on-surface: #1F1F1F;
+  --gm-on-surface-variant: #00000099;
+  --gm-outline: #00000012;
+
+  --gm-primary: var(--brand);
+  --gm-primary-dark: var(--brand-dark);
   --gm-on-primary: #FFFFFF;
 
-  --gm-secondary-container: #E8F0FE;
-  --gm-secondary-container-hover: #D2E3FC;
-  --gm-on-secondary-container: #041E49;
+  --gm-secondary-container: var(--brand-soft);
+  --gm-secondary-container-hover: var(--brand-soft-hover);
+  --gm-on-secondary-container: var(--brand-ink);
 
   --gm-radius-sm: 8px;
-  --gm-radius-md: 16px;
-  --gm-radius-lg: 24px;
+  --gm-radius-md: 10px;
+  --gm-radius-lg: 20px;
   --gm-radius-full: 999px;
 
-  --gm-shadow-soft: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --gm-shadow-soft: 0 0 10px #00000008;
 }
 
 html, body {
@@ -28,7 +42,7 @@ html, body {
 
 body {
   font-family: 'Inter', sans-serif;
-  background: #F8FAFD;
+  background: var(--mn-canvas);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -51,7 +65,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8fafc;
+  background: var(--mn-canvas);
   z-index: 9999;
 }
 .app-loading-spinner {
@@ -66,16 +80,67 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  border: 4px solid var(--gm-secondary-container, #E8F0FE);
-  border-top-color: var(--gm-primary, #0B57D0);
+  border: 2px solid var(--mn-faint);
+  border-top-color: var(--gm-primary);
   border-radius: 50%;
   animation: app-loading-spin 0.8s linear infinite;
 }
 .app-loading-spinner i {
-  font-size: 24px;
-  color: var(--gm-primary, #0B57D0);
+  font-size: 20px;
+  color: var(--gm-on-surface-variant);
 }
 @keyframes app-loading-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* --- Minimalist chrome shared by the public and admin shells --- */
+.mn-navbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 10%;
+  width: 100%;
+  flex-shrink: 0;
+  background: transparent;
+}
+/* Short centred hairline under the navbar, not a full-width rule */
+.mn-navbar::before {
+  content: '';
+  position: absolute;
+  left: 30%;
+  width: 40%;
+  bottom: 0;
+  border-bottom: 1px solid var(--mn-hairline);
+}
+.mn-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 14px;
+  border: 1px solid var(--brand-line);
+  border-radius: 30px;
+  background: var(--brand-soft);
+  color: var(--brand-dark);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.mn-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 10%;
+  width: 100%;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: #00000055;
+}
+@media (max-width: 480px) {
+  .mn-navbar { padding: 16px; }
+  .mn-footer { padding: 12px 16px; }
 }

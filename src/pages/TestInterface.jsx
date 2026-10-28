@@ -195,17 +195,17 @@ export default function TestInterface() {
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-3">
           {!test.strictMode && (
-            <button onClick={handleExit} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-slate-600 hover:bg-gray-200 transition-colors">
+            <button onClick={handleExit} className="w-8 h-8 rounded-full bg-[#00000008] flex items-center justify-center text-[#00000099] hover:bg-[#00000015] transition-colors">
               <i className="fa-solid fa-xmark"></i>
             </button>
           )}
-          <span className="text-sm font-bold text-slate-700">{test.displayName}</span>
+          <span className="text-sm font-bold text-[#000000b3]">{test.displayName}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className={`test-timer ${timerClass}`}>
             <i className="fa-regular fa-clock"></i> <span>{m}:{s < 10 ? '0' : ''}{s}</span>
           </div>
-          <div className="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+          <div className="text-sm font-semibold text-brand-ink bg-brand-soft px-3 py-1 rounded-full">
             <span>{currentIndex + 1}</span>/<span>{questions.length}</span>
           </div>
         </div>
@@ -215,8 +215,8 @@ export default function TestInterface() {
         <div className="test-progress-fill" style={{ width: `${progressPct}%` }}></div>
       </div>
 
-      <div id="questionArea" className="flex-1 flex flex-col bg-gray-50 rounded-2xl p-5 mb-4 relative">
-        <h3 id="questionText" className="text-lg font-bold text-slate-800 leading-relaxed mb-6">{question.question}</h3>
+      <div id="questionArea" className="flex-1 flex flex-col bg-[#00000005] rounded-2xl p-5 mb-4 relative">
+        <h3 id="questionText" className="text-lg font-bold text-[#1F1F1F] leading-relaxed mb-6">{question.question}</h3>
 
         <div id="optionsContainer" className="space-y-2 flex-1">
           {question.options.map((opt, index) => {
@@ -228,7 +228,7 @@ export default function TestInterface() {
                 onClick={() => selectOption(opt)}
                 className={`option-btn ${selected ? 'selected' : ''}`}
               >
-                <span className="option-badge w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-semibold text-slate-500 flex-shrink-0">
+                <span className="option-badge w-6 h-6 rounded-full bg-[#00000008] flex items-center justify-center text-xs font-semibold text-[#00000080] flex-shrink-0">
                   {String.fromCharCode(65 + index)}
                 </span>
                 <span>{opt}</span>
@@ -260,14 +260,14 @@ export default function TestInterface() {
         {showModal && (
           <div className="absolute inset-0 bg-black/5 backdrop-blur-sm rounded-2xl z-20 flex items-center justify-center p-6">
             <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl mx-auto mb-3">
+              <div className="w-12 h-12 bg-brand-soft rounded-full flex items-center justify-center text-brand text-xl mx-auto mb-3">
                 <i className="fa-regular fa-clock"></i>
               </div>
-              <h4 className="text-center font-bold text-slate-800 text-lg">Submit Exam?</h4>
-              <p className="text-center text-sm text-slate-500 mb-6">Are you sure you want to submit? You cannot retake this test.</p>
+              <h4 className="text-center font-bold text-[#1F1F1F] text-lg">Submit Exam?</h4>
+              <p className="text-center text-sm text-[#00000080] mb-6">Are you sure you want to submit? You cannot retake this test.</p>
               <div className="flex gap-3">
-                <button onClick={() => setShowModal(false)} className="flex-1 py-3 border border-gray-200 rounded-xl text-slate-600 font-medium hover:bg-gray-50">No</button>
-                <button onClick={handleSubmit} disabled={submitting} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-medium shadow-md shadow-blue-200 hover:bg-blue-700 disabled:opacity-60">
+                <button onClick={() => setShowModal(false)} className="flex-1 py-3 border border-[#00000012] rounded-full text-[#00000099] font-medium hover:bg-[#00000005]">No</button>
+                <button onClick={handleSubmit} disabled={submitting} className="flex-1 py-3 bg-brand text-white rounded-full font-medium hover:bg-brand-dark disabled:opacity-60">
                   {submitting ? 'Submitting…' : 'Yes, Submit'}
                 </button>
               </div>
@@ -281,11 +281,11 @@ export default function TestInterface() {
               <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 text-xl mx-auto mb-3">
                 <i className="fa-solid fa-triangle-exclamation"></i>
               </div>
-              <h4 className="text-center font-bold text-slate-800 text-lg">Exit Test?</h4>
-              <p className="text-center text-sm text-slate-500 mb-6">Are you sure you want to exit? Your progress will be lost.</p>
+              <h4 className="text-center font-bold text-[#1F1F1F] text-lg">Exit Test?</h4>
+              <p className="text-center text-sm text-[#00000080] mb-6">Are you sure you want to exit? Your progress will be lost.</p>
               <div className="flex gap-3">
-                <button onClick={() => setShowExitModal(false)} className="flex-1 py-3 border border-gray-200 rounded-xl text-slate-600 font-medium hover:bg-gray-50">No</button>
-                <button onClick={confirmExit} className="flex-1 py-3 bg-amber-500 text-white rounded-xl font-medium shadow-md shadow-amber-200 hover:bg-amber-600">
+                <button onClick={() => setShowExitModal(false)} className="flex-1 py-3 border border-[#00000012] rounded-full text-[#00000099] font-medium hover:bg-[#00000005]">No</button>
+                <button onClick={confirmExit} className="flex-1 py-3 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600">
                   Yes, Exit
                 </button>
               </div>
@@ -295,13 +295,13 @@ export default function TestInterface() {
       </div>
 
       <div className="flex gap-3">
-        <button onClick={goPrev} disabled={currentIndex === 0} className="flex-1 py-3 border border-gray-200 rounded-xl text-slate-600 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white">
+        <button onClick={goPrev} disabled={currentIndex === 0} className="flex-1 py-3 border border-[#00000012] rounded-full text-[#00000099] font-medium hover:bg-[#00000005] disabled:opacity-50 disabled:hover:bg-transparent">
           <i className="fa-solid fa-chevron-left mr-2"></i> Previous
         </button>
-        <button onClick={goNext} disabled={currentIndex === questions.length - 1} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-medium shadow-md shadow-blue-200 hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 disabled:cursor-not-allowed">
+        <button onClick={goNext} disabled={currentIndex === questions.length - 1} className="flex-1 py-3 bg-brand text-white rounded-full font-medium hover:bg-brand-dark disabled:opacity-50 disabled:hover:bg-brand disabled:cursor-not-allowed">
           Next <i className="fa-solid fa-chevron-right ml-2"></i>
         </button>
-        <button onClick={() => setShowModal(true)} className="flex-1 py-3 bg-slate-800 text-white rounded-xl font-medium shadow-md hover:bg-slate-900">
+        <button onClick={() => setShowModal(true)} className="flex-1 py-3 bg-[#1F1F1F] text-white rounded-full font-medium shadow-md hover:bg-black">
           Submit <i className="fa-regular fa-paper-plane ml-2"></i>
         </button>
       </div>

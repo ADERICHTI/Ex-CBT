@@ -125,18 +125,3 @@ export async function parseAllowedUsersFile(file) {
 export function allowedUsersToCsv(allowedUsers) {
   return Papa.unparse((allowedUsers ?? []).map((u) => ({ name: u.name, studentId: u.studentId })));
 }
-
-// Both name and student id must match the same allowed-list entry - trimmed,
-// case-insensitive, so small formatting differences don't lock a student out.
-//
-// restrictAccess is the explicit on/off toggle, kept independent of the list
-// itself so an admin can flip enforcement off without losing an uploaded
-// list. Older tests never wrote that field, so fall back to "non-empty list
-// means restricted" for them.
-export function isUserAllowed(allowedUsers, restrictAccess, name, studentId) {
-  const restricted = restrictAccess ?? Boolean(allowedUsers?.length);
-  if (!restricted) return true;
-  const n = name.trim().toLowerCase();
-  const s = studentId.trim().toLowerCase();
-  return (allowedUsers ?? []).some((u) => u.name.trim().toLowerCase() === n && u.studentId.trim().toLowerCase() === s);
-}

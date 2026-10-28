@@ -72,13 +72,13 @@ export default function QuestionsEditor() {
     }
   }
 
-  if (loading) return <p className="text-slate-500">Loading…</p>;
-  if (!test) return <p className="text-slate-500">Test not found.</p>;
-  if (test.createdBy !== user.email) return <p className="text-slate-500">You don't have access to manage this test.</p>;
+  if (loading) return <p className="text-[#00000080]">Loading…</p>;
+  if (!test) return <p className="text-[#00000080]">Test not found.</p>;
+  if (test.createdBy !== user.email) return <p className="text-[#00000080]">You don't have access to manage this test.</p>;
 
   return (
     <div>
-      <Link to={`/manage/${testId}`} className="text-sm text-[#444746] hover:text-[#1F1F1F] mb-4 inline-flex items-center gap-1">
+      <Link to={`/manage/${testId}`} className="text-sm text-[#00000099] hover:text-[#1F1F1F] mb-4 inline-flex items-center gap-1">
         <i className="fa-solid fa-chevron-left"></i> {test.displayName}
       </Link>
 
@@ -102,7 +102,7 @@ export default function QuestionsEditor() {
         </div>
       </div>
 
-      <p className="text-xs text-[#444746] mb-4">
+      <p className="text-xs text-[#00000099] mb-4">
         Separate options with a pipe (<code>|</code>). The answer must match one of the options exactly.
       </p>
 

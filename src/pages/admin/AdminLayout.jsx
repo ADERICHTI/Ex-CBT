@@ -22,10 +22,21 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="admin-shell">
-      <header className="admin-topbar">
-        <div className="flex items-center gap-2 font-bold text-slate-800">
-          <i className="fa-solid fa-graduation-cap text-blue-600"></i> Examiner Admin
-        </div>
+      <header className="admin-topbar mn-navbar">
+        <NavLink to="/" className="mn-logo">ex-cbt</NavLink>
+
+        <nav className="admin-topnav">
+          {NAV_ITEMS.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
 
         <div className="admin-topbar-actions items-center gap-3">
           <button
@@ -37,11 +48,11 @@ export default function AdminLayout({ children }) {
           >
             <i className={`fa-solid fa-arrows-rotate ${refreshing ? 'fa-spin' : ''}`}></i>
           </button>
-          <span className="text-xs text-slate-500">{user?.email}</span>
+          <span className="text-xs text-[#00000066]">{user?.email}</span>
           <button
             type="button"
             onClick={() => signOut(auth)}
-            className="text-xs font-medium text-slate-600 hover:text-red-600 flex items-center gap-1"
+            className="text-xs font-medium text-[#00000099] hover:text-[#1F1F1F] flex items-center gap-1"
           >
             <i className="fa-solid fa-right-from-bracket"></i> Sign out
           </button>
@@ -90,24 +101,13 @@ export default function AdminLayout({ children }) {
         )}
       </header>
 
-      <div className="admin-body">
-        <aside className="admin-sidebar">
-          {NAV_ITEMS.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}
-            >
-              <i className={item.icon}></i> {item.label}
-            </NavLink>
-          ))}
-        </aside>
-
-        <main className="admin-main">
+      <main className="admin-main">
+        <div className="admin-container">
           {children ?? <Outlet />}
-        </main>
-      </div>
+        </div>
+      </main>
+
+      <footer className="mn-footer">&copy; 2026 ex-cbt</footer>
     </div>
   );
 }

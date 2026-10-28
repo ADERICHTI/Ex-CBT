@@ -1,7 +1,7 @@
 const STYLES = {
   success: { icon: 'fa-circle-check', classes: 'bg-emerald-50 border-emerald-200 text-emerald-800', iconClasses: 'text-emerald-500' },
   warning: { icon: 'fa-triangle-exclamation', classes: 'bg-amber-50 border-amber-200 text-amber-800', iconClasses: 'text-amber-500' },
-  info: { icon: 'fa-circle-info', classes: 'bg-blue-50 border-blue-200 text-blue-800', iconClasses: 'text-blue-500' },
+  info: { icon: 'fa-circle-info', classes: 'bg-brand-soft border-brand-line text-brand-ink', iconClasses: 'text-brand' },
 };
 
 export default function Toaster({ toasts, onDismiss }) {

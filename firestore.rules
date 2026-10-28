@@ -29,11 +29,29 @@ service cloud.firestore {
     // tests (the query behind listTests()/TestsList always adds a matching
     // where('createdBy', ...) clause, which is what lets Firestore prove this
     // rule holds for every document in that result set).
+    // Owner of the test as it will stand once the current write (or batch)
+    // commits - getAfter() sees sibling writes in the same batch, so this
+    // works both for createTest()'s batch (parent created alongside) and for
+    // later standalone writes. Used to gate the owner-only subdocs' writes.
+    function willOwnTest(testId) {
+      return isSignedIn() &&
+        getAfter(/databases/$(database)/documents/tests/$(testId)).data.createdBy == request.auth.token.email;
+    }
+
     match /tests/{testId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn() && resource.data.createdBy == request.auth.token.email;
-      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.token.email;
-      allow update, delete: if isTestOwner(testId);
+      // The roster must never sit on this publicly-readable doc - it lives in
+      // the owner-only roster subcollection below.
+      allow create: if isSignedIn() &&
+        request.resource.data.createdBy == request.auth.token.email &&
+        !('allowedUsers' in request.resource.data);
+      // createdBy is fixed at creation: an owner can't hand a test (and its
+      // submissions) to another account.
+      allow update: if isTestOwner(testId) &&
+        request.resource.data.createdBy == resource.data.createdBy &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['allowedUsers']);
+      allow delete: if isTestOwner(testId);
 
       // tests/{testId}/answerKey/data - the correct answers, index-aligned
       // with tests/{testId}.questions. Owner-only: this is the whole point of
@@ -41,16 +59,21 @@ service cloud.firestore {
       // be able to read it. Cloud Functions grade via the Admin SDK, which
       // bypasses these rules entirely.
       //
-      // create is checked against the doc's own (denormalized) createdBy
-      // field, not isTestOwner(testId) - createTest() writes this doc in the
-      // same batch as tests/{testId} itself, and within one batch commit
-      // every mutation's rule is evaluated against the pre-batch database
-      // state, so get()-ing the parent test doc here would always see it as
-      // not-yet-existing. read/update/delete always happen after the parent
-      // already exists, so isTestOwner(testId) (a get()) is safe there.
+      // Writes check the parent's owner via getAfter() (willOwnTest), so
+      // nobody can plant an answer key on someone else's test, while
+      // createTest() can still write it in the same batch as the parent.
       match /answerKey/{doc} {
-        allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.token.email;
-        allow read, update, delete: if isTestOwner(testId);
+        allow read, delete: if isTestOwner(testId);
+        allow create, update: if willOwnTest(testId);
+      }
+
+      // tests/{testId}/roster/data - the approved name + Student ID list.
+      // Owner-only for the same reason as the answer key: if test-takers
+      // could read it they could start the test as a classmate. The
+      // startTest Cloud Function checks it via the Admin SDK.
+      match /roster/{doc} {
+        allow read, delete: if isTestOwner(testId);
+        allow create, update: if willOwnTest(testId);
       }
 
       // tests/{testId}/submissions/{studentId} - one doc per test-taker,
@@ -88,8 +111,15 @@ service cloud.firestore {
     }
 
     // users/{email} - doc id is the signed-in user's email, per spec.
+    // testsTaken is written only by the submitTest/deleteSubmission Cloud
+    // Functions - a user clearing their own flag would re-open the start
+    // screen for a second attempt under a different Student ID.
     match /users/{email} {
-      allow read, write: if isOwnUserDoc(email);
+      allow read: if isOwnUserDoc(email);
+      allow create: if isOwnUserDoc(email) && !('testsTaken' in request.resource.data);
+      allow update: if isOwnUserDoc(email) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['testsTaken']);
+      allow delete: if false;
     }
   }
 }

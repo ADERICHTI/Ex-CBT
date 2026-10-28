@@ -18,9 +18,11 @@ function normalizeStudentId(studentId) {
   return normalize(studentId).replace(/\s+/g, '-');
 }
 
-// Single source of truth for roster eligibility - StartTest.jsx still runs
-// isUserAllowed() (src/services/csv.js) first for instant feedback, but this
-// is the enforced copy; the two must stay logically equivalent.
+// The only roster check - the roster lives in the owner-only
+// tests/{testId}/roster/data doc, which test-takers can't read, so there's
+// no client-side copy of this any more. Trimmed, case-insensitive match on
+// both name and Student ID. Older tests never wrote restrictAccess, so a
+// non-empty list means "restricted" for them.
 function isRosterAllowed(allowedUsers, restrictAccess, name, studentId) {
   const restricted = restrictAccess ?? Boolean(allowedUsers?.length);
   if (!restricted) return true;
@@ -44,7 +46,7 @@ function gradeAnswers(studentAnswers, correctAnswers) {
 // code path that may create a tests/{testId}/submissions/{id} doc now (see
 // firestore.rules: submissions writes are `if false`, functions-only).
 // Folds in what used to be three separate steps: the roster check
-// (StartTest.jsx's isUserAllowed, now also enforced here), the dedupe check
+// (now enforced only here), the dedupe check
 // (findActiveSubmission), and the write itself.
 export const startTest = onCall(async (request) => {
   const email = request.auth?.token?.email;
@@ -61,7 +63,12 @@ export const startTest = onCall(async (request) => {
   }
   const test = testSnap.data();
 
-  if (!isRosterAllowed(test.allowedUsers, test.restrictAccess, name, studentId)) {
+  // Fall back to the legacy embedded list for tests not yet migrated by
+  // scripts/migrate-rosters.mjs.
+  const rosterSnap = await db.doc(`tests/${testId}/roster/data`).get();
+  const allowedUsers = rosterSnap.exists ? rosterSnap.data().allowedUsers : test.allowedUsers;
+
+  if (!isRosterAllowed(allowedUsers, test.restrictAccess, name, studentId)) {
     throw new HttpsError('permission-denied', "You're not on the approved list for this test.");
   }
 

@@ -163,11 +163,11 @@ export default function Auth() {
       <div id="page-login" className="page active items-center justify-center relative">
         <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full">
           <div className="mb-10 text-center">
-            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 text-2xl font-bold mx-auto mb-4 shadow-lg shadow-blue-50">
+            <div className="w-16 h-16 bg-brand-soft rounded-2xl flex items-center justify-center text-brand text-2xl font-bold mx-auto mb-4">
               <i className="fa-solid fa-envelope"></i>
             </div>
-            <h1 className="text-3xl font-bold text-slate-800">Confirm your email</h1>
-            <p className="text-slate-500 text-sm mt-1">
+            <h1 className="text-3xl font-bold text-[#1F1F1F]">Confirm your email</h1>
+            <p className="text-[#00000080] text-sm mt-1">
               Enter the email you used to request this sign-in link.
             </p>
           </div>
@@ -178,13 +178,13 @@ export default function Auth() {
               value={linkEmail}
               onChange={(e) => setLinkEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-slate-700"
+              className="w-full px-4 py-3 border border-[#00000012] rounded-xl text-[#000000b3]"
               required
             />
             <button
               type="submit"
               disabled={busy}
-              className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-brand text-white rounded-full font-medium hover:bg-brand-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {busy ? 'Signing in…' : 'Continue'}
             </button>
@@ -198,27 +198,21 @@ export default function Auth() {
 
   return (
     <div id="page-login" className="page active items-center justify-center relative">
-      <div className="absolute top-6 left-6 flex items-center gap-2 lg:hidden">
-        <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 text-sm">
-          <i className="fa-solid fa-graduation-cap"></i>
-        </div>
-        <span className="text-sm font-bold tracking-tight text-slate-800">Examiner</span>
-      </div>
 
       <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full">
         <div className="mb-8 text-center">
-          <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 text-2xl font-bold mx-auto mb-4 shadow-lg shadow-blue-50">
+          <div className="w-16 h-16 bg-brand-soft rounded-2xl flex items-center justify-center text-brand text-2xl font-bold mx-auto mb-4">
             <i className="fa-solid fa-graduation-cap"></i>
           </div>
-          <h1 className="text-3xl font-bold text-slate-800">
+          <h1 className="text-3xl font-bold text-[#1F1F1F]">
             {mode === 'signup' ? 'Create your account' : 'Welcome back'}
           </h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <p className="text-[#00000080] text-sm mt-1">
             {mode === 'signup' ? 'Sign up to get started.' : 'Sign in to continue.'}
           </p>
         </div>
 
-        <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
+        <div className="flex bg-[#00000008] rounded-xl p-1 mb-6">
           <button
             type="button"
             onClick={() => {
@@ -227,7 +221,7 @@ export default function Auth() {
               setInfo('');
             }}
             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-              mode === 'login' ? 'bg-white shadow text-slate-800' : 'text-slate-500'
+              mode === 'login' ? 'bg-white shadow text-[#1F1F1F]' : 'text-[#00000080]'
             }`}
           >
             Log in
@@ -240,7 +234,7 @@ export default function Auth() {
               setInfo('');
             }}
             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-              mode === 'signup' ? 'bg-white shadow text-slate-800' : 'text-slate-500'
+              mode === 'signup' ? 'bg-white shadow text-[#1F1F1F]' : 'text-[#00000080]'
             }`}
           >
             Create account
@@ -253,7 +247,7 @@ export default function Auth() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email address"
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-slate-700"
+            className="w-full px-4 py-3 border border-[#00000012] rounded-xl text-[#000000b3]"
             required
           />
           <input
@@ -261,7 +255,7 @@ export default function Auth() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-slate-700"
+            className="w-full px-4 py-3 border border-[#00000012] rounded-xl text-[#000000b3]"
             required
             minLength={6}
           />
@@ -271,7 +265,7 @@ export default function Auth() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm password"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-slate-700"
+              className="w-full px-4 py-3 border border-[#00000012] rounded-xl text-[#000000b3]"
               required
               minLength={6}
             />
@@ -280,7 +274,7 @@ export default function Auth() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-brand text-white rounded-full font-medium hover:bg-brand-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {busy ? 'Please wait…' : mode === 'signup' ? 'Create account' : 'Log in'}
           </button>
@@ -289,9 +283,9 @@ export default function Auth() {
         {mode === 'login' && (
           <>
             <div className="flex items-center gap-3 my-5">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-xs text-slate-400">OR</span>
-              <div className="flex-1 h-px bg-gray-200" />
+              <div className="flex-1 h-px bg-[#00000015]" />
+              <span className="text-xs text-[#00000066]">OR</span>
+              <div className="flex-1 h-px bg-[#00000015]" />
             </div>
 
             <div className="space-y-2">
@@ -299,7 +293,7 @@ export default function Auth() {
                 type="button"
                 onClick={handleGoogleSignIn}
                 disabled={busy}
-                className="w-full py-3 border border-gray-200 rounded-xl flex justify-center items-center gap-2 hover:bg-gray-50 transition-colors text-slate-600 font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full py-3 border border-[#00000012] rounded-full flex justify-center items-center gap-2 hover:bg-[#00000005] transition-colors text-[#00000099] font-medium disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <i className="fa-brands fa-google text-red-500"></i> Continue with Google
               </button>
@@ -307,9 +301,9 @@ export default function Auth() {
                 type="button"
                 onClick={handleSendEmailLink}
                 disabled={busy}
-                className="w-full py-3 border border-gray-200 rounded-xl flex justify-center items-center gap-2 hover:bg-gray-50 transition-colors text-slate-600 font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full py-3 border border-[#00000012] rounded-full flex justify-center items-center gap-2 hover:bg-[#00000005] transition-colors text-[#00000099] font-medium disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                <i className="fa-solid fa-link text-blue-500"></i> Email me a sign-in link
+                <i className="fa-solid fa-link text-brand"></i> Email me a sign-in link
               </button>
             </div>
           </>

@@ -9,7 +9,7 @@ export default function SpreadsheetTable({
   emptyMessage = 'No data yet.',
 }) {
   if (!rows.length) {
-    return <p className="text-sm text-slate-500 py-10 text-center">{emptyMessage}</p>;
+    return <p className="text-sm text-[#00000080] py-10 text-center">{emptyMessage}</p>;
   }
 
   return (

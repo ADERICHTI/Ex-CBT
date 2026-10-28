@@ -40,6 +40,14 @@ function answerKeyDoc(testId) {
   return doc(db, 'tests', testId, 'answerKey', 'data');
 }
 
+// The approved name + Student ID list lives in an owner-only subdoc for the
+// same reason the answer key does: the public test doc is readable by anyone
+// with the link, and a readable roster would let a student impersonate a
+// classmate. Only the startTest Cloud Function checks it for test-takers.
+function rosterDoc(testId) {
+  return doc(db, 'tests', testId, 'roster', 'data');
+}
+
 // The public test doc never carries an `answer` field - only the owner-only
 // answerKey subdoc does (see firestore.rules). This is the split point: any
 // write of `questions` here always writes both docs together, in the same
@@ -63,6 +71,12 @@ export async function getTest(testId) {
 export async function getTestAnswerKey(testId) {
   const snap = await getDoc(answerKeyDoc(testId));
   return snap.exists() ? snap.data().answers ?? [] : [];
+}
+
+// Owner-only (see firestore.rules).
+export async function getTestRoster(testId) {
+  const snap = await getDoc(rosterDoc(testId));
+  return snap.exists() ? snap.data().allowedUsers ?? [] : [];
 }
 
 export async function listTests(ownerEmail) {
@@ -94,10 +108,9 @@ export async function createTest({ adminEnteredId, displayName, minutes, questio
     displayName,
     minutes,
     questions: publicQuestions,
-    // Saved list of name + student id pairs; only enforced when restrictAccess
-    // is true (checked in StartTest.jsx). Kept even when restriction is off so
-    // an admin can re-enable it later without re-uploading.
-    allowedUsers: allowedUsers ?? [],
+    // The roster itself is in the owner-only roster subdoc (written below);
+    // it's only enforced when restrictAccess is true, and kept even when
+    // restriction is off so an admin can re-enable it without re-uploading.
     restrictAccess: Boolean(restrictAccess),
     // Strict mode: no exit button, forces fullscreen, auto-submits if the
     // student navigates away or leaves fullscreen (enforced in TestInterface.jsx).
@@ -114,6 +127,7 @@ export async function createTest({ adminEnteredId, displayName, minutes, questio
   // rule (not via isTestOwner's get() on the parent doc, which can't see
   // this same batch's sibling write yet - see the rule's comment).
   batch.set(answerKeyDoc(testId), { answers, createdBy });
+  batch.set(rosterDoc(testId), { allowedUsers: allowedUsers ?? [], createdBy });
   await batch.commit();
 
   return testId;
@@ -123,22 +137,26 @@ export async function updateTest(testId, { displayName, minutes, questions, allo
   const patch = { updatedAt: serverTimestamp(), updatedBy };
   if (displayName !== undefined) patch.displayName = displayName;
   if (minutes !== undefined) patch.minutes = minutes;
-  if (allowedUsers !== undefined) patch.allowedUsers = allowedUsers;
   if (restrictAccess !== undefined) patch.restrictAccess = restrictAccess;
   if (strictMode !== undefined) patch.strictMode = strictMode;
   if (active !== undefined) patch.active = active;
 
-  if (questions !== undefined) {
-    const { publicQuestions, answers } = splitQuestions(questions);
-    patch.questions = publicQuestions;
-    const batch = writeBatch(db);
-    batch.update(doc(db, 'tests', testId), patch);
-    batch.set(answerKeyDoc(testId), { answers });
-    await batch.commit();
+  if (questions === undefined && allowedUsers === undefined) {
+    await updateDoc(doc(db, 'tests', testId), patch);
     return;
   }
 
-  await updateDoc(doc(db, 'tests', testId), patch);
+  const batch = writeBatch(db);
+  if (questions !== undefined) {
+    const { publicQuestions, answers } = splitQuestions(questions);
+    patch.questions = publicQuestions;
+    batch.set(answerKeyDoc(testId), { answers, createdBy: updatedBy });
+  }
+  if (allowedUsers !== undefined) {
+    batch.set(rosterDoc(testId), { allowedUsers, createdBy: updatedBy });
+  }
+  batch.update(doc(db, 'tests', testId), patch);
+  await batch.commit();
 }
 
 export async function deleteTest(testId) {

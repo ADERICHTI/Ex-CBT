@@ -40,28 +40,22 @@ export default function Submission() {
 
   return (
     <div id="page-submitted" className="page active items-center justify-center text-center relative">
-      <div className="absolute top-6 left-6 flex items-center gap-2 text-left lg:hidden">
-        <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 text-sm">
-          <i className="fa-solid fa-graduation-cap"></i>
-        </div>
-        <span className="text-sm font-bold tracking-tight text-slate-800">Examiner</span>
-      </div>
 
       <div className="max-w-sm">
-        <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-5xl mx-auto mb-6 shadow-lg shadow-green-200">
+        <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-5xl mx-auto mb-6">
           <i className="fa-solid fa-check"></i>
         </div>
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">
+        <h2 className="text-2xl font-bold text-[#1F1F1F] mb-2">
           {alreadyTaken ? 'A Submission Already Exists' : 'Submission Successful!'}
         </h2>
-        <p className="text-slate-500 mb-8 text-sm leading-relaxed">
+        <p className="text-[#00000080] mb-8 text-sm leading-relaxed">
           {alreadyTaken ? (
             <>A submission has already been made under this ID for {testId ? 'this test' : 'this test link'}.</>
           ) : (
             'Your test has been successfully submitted.'
           )}
           <br /><br />
-          <span className="font-semibold text-slate-700 text-base">You cannot retake this test again.</span>{' '}
+          <span className="font-semibold text-[#000000b3] text-base">You cannot retake this test again.</span>{' '}
           Please contact your administrator if you believe this is an error.
         </p>
       </div>

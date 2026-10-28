@@ -1,107 +1,37 @@
-/* --- App Container --- */
+/* --- App Container: navbar / centered body / footer (mnldsg) --- */
 #app-container {
     width: 100%;
-    max-width: 420px;
-    background: white;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    position: relative;
     height: 100dvh;
     display: flex;
     flex-direction: column;
-    margin: 0 auto;
+    background: var(--mn-canvas);
+    position: relative;
+    overflow: hidden;
 }
 
-/* #pagesWrap just passes layout through on mobile/tablet */
 #pagesWrap {
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 100%;
-    min-width: 0;
 }
 
-#brandPanel { display: none; }
-
-/* Mobile: full-bleed, no card chrome */
-@media (max-width: 480px) {
-    #app-container {
-        border-radius: 0;
-        box-shadow: none;
-        max-width: 100%;
-    }
+.page {
+    max-width: 480px;
+    width: 100%;
+    margin: 0 auto;
 }
+#page-submitted.page { max-width: 560px; }
 
-/* Tablet: cap height so it reads as a card, not a stretched sliver */
-@media (min-width: 481px) and (max-width: 1023px) {
-    #app-container {
-        height: min(850px, 100dvh - 40px);
-        border-radius: 32px;
-        margin: 20px auto;
-    }
-}
-
-/* Desktop: full-bleed split screen, brand panel + content panel */
 @media (min-width: 1024px) {
-    #app-container {
-        max-width: 100%;
-        height: 100dvh;
-        border-radius: 0;
-        box-shadow: none;
-        flex-direction: row;
-        margin: 0;
-    }
+    .page { justify-content: center; }
 
-    #brandPanel {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        width: 42%;
-        max-width: 520px;
-        min-width: 380px;
-        height: 100%;
-        padding: 56px 48px;
-        position: relative;
-        overflow: hidden;
-        color: white;
-        background: radial-gradient(120% 120% at 0% 0%, #3b82f6 0%, #1d4ed8 45%, #1e3a8a 100%);
-        flex-shrink: 0;
-    }
-    #brandPanel::before,
-    #brandPanel::after {
-        content: '';
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.08);
-    }
-    #brandPanel::before { width: 340px; height: 340px; top: -120px; right: -120px; }
-    #brandPanel::after { width: 240px; height: 240px; bottom: -80px; left: -80px; background: rgba(255,255,255,0.06); }
-
-    #pagesWrap {
-        flex: 1;
-        min-width: 0;
-        height: 100%;
-        background: #f8fafc;
-    }
-
-    .page {
-        max-width: 480px;
-        width: 100%;
-        margin: 0 auto;
-        padding: 56px 24px;
-        justify-content: center;
-    }
-    #page-submitted.page {
-        max-width: 560px;
-    }
-
-    /* Test in progress (or a full-screen empty/error state): hide the brand panel, use the full window */
-    #app-container.test-mode #brandPanel {
-        display: none;
-    }
+    /* Test in progress: use the full window */
     #app-container.test-mode #page-test.page {
         max-width: 1200px;
         padding: 40px 56px;
+        justify-content: flex-start;
     }
     #app-container.test-mode #questionArea {
         display: grid;
@@ -121,47 +51,17 @@
         display: block;
         grid-column: 2;
         grid-row: 1 / span 2;
-        border-left: 1px solid #e2e8f0;
         padding-left: 28px;
+        position: relative;
     }
-
-    /* Start Test: hero fills the screen edge-to-edge like #brandPanel does on
-       other pages; the form sits as a centered card on the right, like a
-       normal .page's content does next to #brandPanel. */
-    #app-container.test-mode #page-start.page {
-        max-width: 100%;
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        justify-content: stretch;
-    }
-    #app-container.test-mode #startLayout {
-        display: grid;
-        grid-template-columns: 1fr 480px;
-        column-gap: 0;
-        align-items: stretch;
-        height: 100%;
-        width: 100%;
-    }
-    #app-container.test-mode #startInfo {
-        align-self: stretch;
-        height: 100%;
-        border-radius: 0;
-        padding: 56px 64px;
-    }
-    #app-container.test-mode #startInfo h3 {
-        font-size: 28px;
-    }
-    #app-container.test-mode #startFormCard {
-        align-self: center;
-        justify-self: center;
-        width: 100%;
-        max-width: 380px;
-        margin: 0 40px;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 32px;
+    /* Short centred hairline instead of a full-height rule */
+    #app-container.test-mode #questionNav::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 25%;
+        height: 50%;
+        border-left: 1px solid var(--mn-hairline);
     }
 }
 
@@ -170,37 +70,19 @@
     flex-direction: column;
     gap: 24px;
     flex: 1;
+    justify-content: center;
 }
 
-.start-hero {
-    position: relative;
-    overflow: hidden;
-    border-radius: 20px;
-    padding: 32px 28px;
-    color: white;
-    background: radial-gradient(120% 120% at 0% 0%, #3b82f6 0%, #1d4ed8 45%, #1e3a8a 100%);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 24px;
+.start-info {
+    text-align: center;
 }
 
-.triangle-bg {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    pointer-events: none;
-    z-index: 0;
+#startFormCard {
+    background: var(--gm-surface);
+    border-radius: var(--gm-radius-md);
+    box-shadow: var(--gm-shadow-soft);
+    padding: 28px;
 }
-.triangle-bg .triangle {
-    position: absolute;
-    width: 0;
-    height: 0;
-}
-.triangle-bg .t1 { top: -50px; left: -40px; border-left: 110px solid transparent; border-right: 110px solid transparent; border-bottom: 190px solid rgba(255,255,255,0.08); transform: rotate(12deg); }
-.triangle-bg .t2 { bottom: 20px; right: -60px; border-left: 90px solid transparent; border-right: 90px solid transparent; border-bottom: 150px solid rgba(255,255,255,0.07); transform: rotate(-20deg); }
-.triangle-bg .t3 { top: 45%; left: 55%; border-left: 55px solid transparent; border-right: 55px solid transparent; border-bottom: 95px solid rgba(255,255,255,0.05); transform: rotate(48deg); }
-.triangle-bg .t4 { bottom: -60px; left: 15%; border-left: 130px solid transparent; border-right: 130px solid transparent; border-bottom: 210px solid rgba(255,255,255,0.06); transform: rotate(-8deg); }
 
 /* --- SPA Page --- */
 .page {
@@ -229,7 +111,7 @@
     text-align: center;
 }
 .btn-primary:hover { background: var(--gm-primary-dark); }
-.btn-primary:disabled { background: #94a3b8; box-shadow: none; cursor: not-allowed; }
+.btn-primary:disabled { background: var(--mn-faint); box-shadow: none; cursor: not-allowed; }
 
 .input-field {
     width: 100%;
@@ -242,12 +124,12 @@
     background: var(--gm-surface-container);
     color: var(--gm-on-surface);
 }
-.input-field:focus { border-color: var(--gm-primary); box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.15); background: var(--gm-surface); }
+.input-field:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); background: var(--gm-surface); }
 .input-field.error { border-color: #ef4444; }
 
 .option-btn {
     width: 100%;
-    padding: 16px 16px 16px 20px;
+    padding: 16px;
     border: 1px solid var(--gm-outline);
     border-radius: 12px;
     text-align: left;
@@ -262,13 +144,11 @@
     overflow: hidden;
     color: var(--gm-on-surface);
 }
-.option-btn:hover { border-color: var(--gm-primary); background: var(--gm-secondary-container); }
+.option-btn:hover { border-color: var(--brand-line); background: var(--gm-secondary-container); }
 .option-btn.selected {
     border-color: var(--gm-primary);
     background: var(--gm-secondary-container);
     color: var(--gm-on-secondary-container);
-    box-shadow: 0 0 0 1px var(--gm-primary);
-    border-left: 4px solid var(--gm-primary);
 }
 .option-btn .option-badge {
     transition: all 0.2s;
@@ -340,11 +220,11 @@
     cursor: pointer;
     transition: all 0.15s;
 }
-.question-nav-btn:hover { border-color: var(--gm-primary); background: var(--gm-secondary-container); }
+.question-nav-btn:hover { border-color: var(--brand-line); background: var(--gm-secondary-container); }
 .question-nav-btn.answered { background: #E6F4EA; border-color: #A8DAB5; color: #1E7E34; }
-.question-nav-btn.current { background: var(--gm-primary); border-color: var(--gm-primary); color: white; transform: scale(1.1); box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.18); }
+.question-nav-btn.current { background: var(--gm-primary); border-color: var(--gm-primary); color: white; transform: scale(1.1); box-shadow: 0 0 0 3px var(--brand-soft); }
 
 /* Scoped Scrollbar */
 .page::-webkit-scrollbar { width: 4px; }
 .page::-webkit-scrollbar-track { background: transparent; }
-.page::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.page::-webkit-scrollbar-thumb { background: var(--mn-faint); border-radius: 10px; }

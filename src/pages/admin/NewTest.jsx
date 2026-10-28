@@ -133,7 +133,7 @@ export default function NewTest() {
               onChange={(e) => setAdminEnteredId(e.target.value)}
               placeholder="e.g. eme401"
             />
-            <p className="text-xs text-[#444746] mt-1">A random suffix is appended automatically, e.g. eme401-vg63f127.</p>
+            <p className="text-xs text-[#00000099] mt-1">A random suffix is appended automatically, e.g. eme401-vg63f127.</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#1F1F1F] mb-1">Display Name</label>
@@ -162,24 +162,24 @@ export default function NewTest() {
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <h2 className="text-sm font-semibold text-[#1F1F1F]">Upload Questions</h2>
           <div className="flex gap-2">
-            <button type="button" onClick={() => handleCopy('csv', CSV_TEMPLATE)} className="text-xs font-medium text-[#0B57D0] hover:underline">
+            <button type="button" onClick={() => handleCopy('csv', CSV_TEMPLATE)} className="text-xs font-medium text-brand hover:underline">
               {copiedLabel === 'csv' ? 'Copied!' : 'Copy CSV template'}
             </button>
-            <span className="text-[#DADCE0]">|</span>
-            <button type="button" onClick={() => handleCopy('json', JSON_TEMPLATE)} className="text-xs font-medium text-[#0B57D0] hover:underline">
+            <span className="text-[#00000012]">|</span>
+            <button type="button" onClick={() => handleCopy('json', JSON_TEMPLATE)} className="text-xs font-medium text-brand hover:underline">
               {copiedLabel === 'json' ? 'Copied!' : 'Copy JSON template'}
             </button>
           </div>
         </div>
 
-        <p className="text-xs text-[#444746] mb-4">
+        <p className="text-xs text-[#00000099] mb-4">
           Each question needs a <code>question</code>, an <code>options</code> list, and an <code>answer</code> that exactly matches one option.
           In CSV, separate options with a pipe (<code>|</code>). Copy a template above to get the exact shape.
         </p>
 
         <div className="upload-dropzone" onClick={() => fileInputRef.current?.click()}>
-          <i className="fa-solid fa-file-arrow-up text-2xl text-[#444746] mb-2"></i>
-          <p className="text-sm text-[#444746] font-medium">Click to upload a .csv or .json file</p>
+          <i className="fa-solid fa-file-arrow-up text-2xl text-[#00000099] mb-2"></i>
+          <p className="text-sm text-[#00000099] font-medium">Click to upload a .csv or .json file</p>
           <input ref={fileInputRef} type="file" accept=".csv,.json,application/json,text/csv" className="hidden" onChange={handleFile} />
         </div>
 
@@ -210,7 +210,7 @@ export default function NewTest() {
           <input type="checkbox" checked={restrictAccess} onChange={(e) => setRestrictAccess(e.target.checked)} />
           <span className="text-sm font-semibold text-[#1F1F1F]">Restrict access to specific students</span>
         </label>
-        <p className="text-xs text-[#444746] mt-1 mb-4">
+        <p className="text-xs text-[#00000099] mt-1 mb-4">
           When on, only students whose name and Student ID exactly match an entry below can start this test.
         </p>
 
@@ -226,7 +226,7 @@ export default function NewTest() {
                 </button>
                 <input ref={allowedFileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleAllowedFile} />
               </div>
-              <button type="button" onClick={() => handleCopy('allowed-csv', ALLOWED_USERS_CSV_TEMPLATE)} className="text-xs font-medium text-[#0B57D0] hover:underline">
+              <button type="button" onClick={() => handleCopy('allowed-csv', ALLOWED_USERS_CSV_TEMPLATE)} className="text-xs font-medium text-brand hover:underline">
                 {copiedLabel === 'allowed-csv' ? 'Copied!' : 'Copy CSV template'}
               </button>
             </div>
@@ -252,7 +252,7 @@ export default function NewTest() {
                 />
               </>
             ) : (
-              <p className="text-sm text-[#444746] py-6 text-center">No students added yet.</p>
+              <p className="text-sm text-[#00000099] py-6 text-center">No students added yet.</p>
             )}
           </>
         )}
@@ -263,7 +263,7 @@ export default function NewTest() {
           <input type="checkbox" checked={strictMode} onChange={(e) => setStrictMode(e.target.checked)} />
           <span className="text-sm font-semibold text-[#1F1F1F]">Strict mode</span>
         </label>
-        <p className="text-xs text-[#444746] mt-1">
+        <p className="text-xs text-[#00000099] mt-1">
           Hides the exit button and locks the browser into fullscreen. If a student switches tabs, exits fullscreen, or navigates away, a 3-second countdown starts and the test auto-submits unless they return in time.
         </p>
       </div>

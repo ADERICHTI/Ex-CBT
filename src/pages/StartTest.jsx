@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTestSession } from '../hooks/useTestSession';
 import { getTest, hasUserTakenTest, startTestAttempt } from '../services/firestore';
-import { isUserAllowed } from '../services/csv';
-import TriangleBackground from '../components/TriangleBackground';
 import LoadingScreen from '../components/LoadingScreen';
 
 export default function StartTest() {
@@ -76,14 +74,6 @@ export default function StartTest() {
       return;
     }
 
-    // Instant feedback for the common case - the startTest Cloud Function
-    // enforces the same roster check server-side regardless, so this is
-    // purely a UX shortcut, never the actual security boundary.
-    if (!isUserAllowed(test.allowedUsers, test.restrictAccess, name, studentId)) {
-      setBeginError("You're not on the approved list for this test. Check your name and Student ID, or contact your instructor.");
-      return;
-    }
-
     setBeginError('');
     setBeginning(true);
     try {
@@ -126,9 +116,9 @@ export default function StartTest() {
           <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 text-4xl mx-auto mb-6">
             <i className="fa-solid fa-hourglass-end"></i>
           </div>
-          <h2 className="text-2xl font-bold text-slate-800 mb-2">This Link Has Expired</h2>
-          <p className="text-slate-500 text-sm leading-relaxed">
-            The test link "<span className="font-mono text-slate-700">{testId}</span>" is no longer available. It may have been closed by your instructor or never existed. Please request a current link.
+          <h2 className="text-2xl font-bold text-[#1F1F1F] mb-2">This Link Has Expired</h2>
+          <p className="text-[#00000080] text-sm leading-relaxed">
+            The test link "<span className="font-mono text-[#000000b3]">{testId}</span>" is no longer available. It may have been closed by your instructor or never existed. Please request a current link.
           </p>
         </div>
       </div>
@@ -142,8 +132,8 @@ export default function StartTest() {
           <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 text-4xl mx-auto mb-6">
             <i className="fa-solid fa-link-slash"></i>
           </div>
-          <h2 className="text-2xl font-bold text-slate-800 mb-2">No Test Found</h2>
-          <p className="text-slate-500 text-sm leading-relaxed">
+          <h2 className="text-2xl font-bold text-[#1F1F1F] mb-2">No Test Found</h2>
+          <p className="text-[#00000080] text-sm leading-relaxed">
             No test ID was specified. Please use the link provided by your instructor.
           </p>
         </div>
@@ -154,34 +144,12 @@ export default function StartTest() {
   return (
     <div id="page-start" className="page active">
       <div id="startLayout">
-        <div id="startInfo" className="start-hero">
-          <TriangleBackground />
-
-          <div className="relative z-10 flex items-center gap-3">
-            <div className="w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center text-xl backdrop-blur-sm">
-              <i className="fa-solid fa-graduation-cap"></i>
-            </div>
-            <span className="text-lg font-bold tracking-tight">Examiner</span>
-          </div>
-
-          <div className="relative z-10">
-            <h3 className="text-2xl font-extrabold mb-1">{test.displayName}</h3>
-            <p className="text-sm text-blue-100/90 mb-6">{test.questions.length} Questions • {test.minutes} Minutes</p>
-
-            <p className="text-sm text-blue-50/90 leading-relaxed mb-6 max-w-sm">
-              You're one step from starting. Have your details ready, keep this tab focused, and submit when you're confident — there's no second attempt once it's in.
-            </p>
-
-            <div className="bg-white/10 border border-white/20 p-4 rounded-xl flex gap-3 backdrop-blur-sm">
-              <i className="fa-solid fa-circle-info mt-1"></i>
-              <div>
-                <h4 className="text-sm font-semibold">Before you begin</h4>
-                <p className="text-xs text-blue-50/80">Read each question carefully and select the best answer. This test can only be taken once.</p>
-              </div>
-            </div>
-          </div>
-
-          <p className="relative z-10 text-xs text-blue-100/70">&copy; 2026 Examiner. All rights reserved.</p>
+        <div id="startInfo" className="start-info">
+          <h3 className="text-2xl font-bold text-[#1F1F1F] mb-1">{test.displayName}</h3>
+          <p className="text-sm text-[#00000066] mb-4">{test.questions.length} Questions • {test.minutes} Minutes</p>
+          <p className="text-sm text-[#00000099] leading-relaxed max-w-sm mx-auto">
+            Read each question carefully and select the best answer. Keep this tab focused and submit when you're confident — this test can only be taken once.
+          </p>
         </div>
 
         <div id="startFormCard">
@@ -191,11 +159,11 @@ export default function StartTest() {
 
           <div className="space-y-4 mb-6">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+              <label className="block text-sm font-medium text-[#000000b3] mb-1">Full Name</label>
               <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="input-field" placeholder="Enter your full name" required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Student ID</label>
+              <label className="block text-sm font-medium text-[#000000b3] mb-1">Student ID</label>
               <input type="text" value={studentId} onChange={(e) => setStudentId(e.target.value)} className="input-field" placeholder="Enter your Student ID" required />
             </div>
           </div>
