@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../features/auth/useAuth.js';
 import { listTests } from '../../services/firestore';
 
 function toDate(ts) {
@@ -23,16 +23,16 @@ export default function TestsList() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-medium text-[#1F1F1F]">Tests</h1>
+        <h1 className="text-2xl font-medium text-[var(--text)]">Tests</h1>
         <Link to="/manage/tests/new" className="btn-primary !w-auto px-4 py-2 text-sm flex items-center gap-2">
           <i className="fa-solid fa-plus"></i> New Test
         </Link>
       </div>
 
       {loading ? (
-        <p className="text-[#00000080]">Loading tests…</p>
+        <p className="text-[var(--text-muted)]">Loading tests…</p>
       ) : tests.length === 0 ? (
-        <p className="text-[#00000080]">No tests yet — create your first one.</p>
+        <p className="text-[var(--text-muted)]">No tests yet — create your first one.</p>
       ) : (
         <div className="space-y-3">
           {tests.map((test) => {
@@ -41,33 +41,33 @@ export default function TestsList() {
               <div key={test.id} className="admin-card">
                 <div className="admin-card-header" onClick={() => setOpenId(isOpen ? null : test.id)}>
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${test.active !== false ? 'bg-green-500' : 'bg-[#00000026]'}`}></span>
+                    <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${test.active !== false ? 'bg-green-500' : 'bg-[var(--fill-strong)]'}`}></span>
                     <div className="min-w-0">
-                      <div className="font-semibold text-[#1F1F1F] truncate">{test.displayName}</div>
-                      <div className="text-xs text-[#00000080] font-mono truncate">{test.id}</div>
+                      <div className="font-semibold text-[var(--text)] truncate">{test.displayName}</div>
+                      <div className="text-xs text-[var(--text-muted)] font-mono truncate">{test.id}</div>
                     </div>
                   </div>
-                  <i className={`fa-solid fa-chevron-down text-[#00000066] transition-transform ${isOpen ? 'rotate-180' : ''}`}></i>
+                  <i className={`fa-solid fa-chevron-down text-[var(--text-muted)] transition-transform ${isOpen ? 'rotate-180' : ''}`}></i>
                 </div>
 
                 {isOpen && (
                   <div className="admin-card-body pt-4">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-4">
                       <div>
-                        <div className="text-xs text-[#00000066] uppercase tracking-wide">Questions</div>
-                        <div className="font-semibold text-[#000000b3]">{test.questions?.length ?? 0}</div>
+                        <div className="text-xs text-[var(--text-muted)] uppercase tracking-wide">Questions</div>
+                        <div className="font-semibold text-[var(--text-muted)]">{test.questions?.length ?? 0}</div>
                       </div>
                       <div>
-                        <div className="text-xs text-[#00000066] uppercase tracking-wide">Minutes</div>
-                        <div className="font-semibold text-[#000000b3]">{test.minutes}</div>
+                        <div className="text-xs text-[var(--text-muted)] uppercase tracking-wide">Minutes</div>
+                        <div className="font-semibold text-[var(--text-muted)]">{test.minutes}</div>
                       </div>
                       <div>
-                        <div className="text-xs text-[#00000066] uppercase tracking-wide">Submissions</div>
-                        <div className="font-semibold text-[#000000b3]">{test.submissionCount ?? 0}</div>
+                        <div className="text-xs text-[var(--text-muted)] uppercase tracking-wide">Submissions</div>
+                        <div className="font-semibold text-[var(--text-muted)]">{test.submissionCount ?? 0}</div>
                       </div>
                       <div>
-                        <div className="text-xs text-[#00000066] uppercase tracking-wide">Created</div>
-                        <div className="font-semibold text-[#000000b3]">{toDate(test.createdAt)?.toLocaleDateString() ?? '—'}</div>
+                        <div className="text-xs text-[var(--text-muted)] uppercase tracking-wide">Created</div>
+                        <div className="font-semibold text-[var(--text-muted)]">{toDate(test.createdAt)?.toLocaleDateString() ?? '—'}</div>
                       </div>
                     </div>
                     <Link to={`/manage/${test.id}`} className="text-sm font-medium text-brand hover:underline">

@@ -2,36 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Connect early to what every page needs (reCAPTCHA → App Check →
+         Firestore / functions / sign-in). -->
+    <link rel="preconnect" href="https://www.google.com" />
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://content-firebaseappcheck.googleapis.com" />
+    <link rel="preconnect" href="https://firestore.googleapis.com" />
+    <link rel="preconnect" href="https://europe-west1-quality-toolsx.cloudfunctions.net" />
+    <link rel="preconnect" href="https://identitytoolkit.googleapis.com" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Ex-CBT</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>HyperCBT</title>
+    <meta name="description" content="Create, run and mark computer-based tests - by Quality Tools." />
+    <meta property="og:site_name" content="HyperCBT" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="HyperCBT" />
+    <meta property="og:description" content="Create, run and mark computer-based tests - by Quality Tools." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-    <!-- Tailwind CSS for Layout -->
+    <!-- Stage 1 only: the test-management screens still use Tailwind and
+         Font Awesome; both go when stage 2 rebuilds those screens. -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
     <script>
-      // Orange-amber brand colour; mirrors the --brand-* tokens in src/index.css
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              brand: {
-                DEFAULT: '#EA7A10',
-                dark: '#C2610A',
-                soft: '#FFF3E6',
-                line: '#FAD3A8',
-                ink: '#7A3A05',
-              },
-            },
-          },
-        },
-      };
+      // Apply a saved theme before first paint so there's no light→dark flash.
+      // No saved choice = follow the system (handled in CSS).
+      try {
+        const theme = localStorage.getItem('hypercbt-theme')
+        if (theme === 'light' || theme === 'dark') {
+          document.documentElement.dataset.theme = theme
+        }
+      } catch {
+        // Storage blocked (private mode etc.) - system theme still applies.
+      }
     </script>
-
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
   <body>
     <div id="root"></div>

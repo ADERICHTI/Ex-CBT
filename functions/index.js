@@ -1,11 +1,36 @@
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { defineBoolean } from 'firebase-functions/params';
+import { setGlobalOptions } from 'firebase-functions/v2';
+import { onCall as onCallBase, HttpsError } from 'firebase-functions/v2/https';
 
 const app = initializeApp();
-// Same named database the client SDK points at (see src/utility/config.js) -
-// the default "(default)" database is a different, unrelated instance.
-const db = getFirestore(app, 'ex-cbt');
+// HyperCBT's named database in the Quality Tools project (quality-toolsx) -
+// the same one the client points at (src/lib/firebase.js). The project's
+// other databases belong to the other Quality Tools apps.
+const db = getFirestore(app, 'hypercbt');
+
+// Same region as the database and PeraForm's functions.
+setGlobalOptions({ region: 'europe-west1' });
+
+// App Check is enforced project-wide on quality-toolsx. Set
+// ENFORCE_APP_CHECK=true in functions/.env once the site's reCAPTCHA key is
+// in place; the emulators never need it.
+const ENFORCE_APP_CHECK = defineBoolean('ENFORCE_APP_CHECK', { default: false });
+const EMULATED = process.env.FUNCTIONS_EMULATOR === 'true';
+function requireApp(request) {
+  if (ENFORCE_APP_CHECK.value() && !EMULATED && !request.app) {
+    throw new HttpsError('failed-precondition', 'This request didn’t come from HyperCBT.');
+  }
+}
+
+// Every callable starts with the App Check check.
+function onCall(handler) {
+  return onCallBase((request) => {
+    requireApp(request);
+    return handler(request);
+  });
+}
 
 function normalize(value) {
   return (value ?? '').toString().trim().toLowerCase();
@@ -63,10 +88,8 @@ export const startTest = onCall(async (request) => {
   }
   const test = testSnap.data();
 
-  // Fall back to the legacy embedded list for tests not yet migrated by
-  // scripts/migrate-rosters.mjs.
   const rosterSnap = await db.doc(`tests/${testId}/roster/data`).get();
-  const allowedUsers = rosterSnap.exists ? rosterSnap.data().allowedUsers : test.allowedUsers;
+  const allowedUsers = rosterSnap.exists ? rosterSnap.data().allowedUsers : [];
 
   if (!isRosterAllowed(allowedUsers, test.restrictAccess, name, studentId)) {
     throw new HttpsError('permission-denied', "You're not on the approved list for this test.");

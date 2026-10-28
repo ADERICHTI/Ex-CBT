@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "quick-cbt"
+    "default": "quality-toolsx",
+    "old": "quick-cbt"
   }
 }

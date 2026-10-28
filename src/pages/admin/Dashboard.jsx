@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import StatTile from '../../components/StatTile';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../features/auth/useAuth.js';
 import { useToast } from '../../context/ToastContext';
 import { listRecentSubmissions, listRecentlyCreatedTests, listRecentlyEditedTests, listTests } from '../../services/firestore';
 
@@ -97,12 +97,12 @@ export default function Dashboard() {
     [recentEdited, range]
   );
 
-  if (loading) return <p className="text-[#00000080]">Loading dashboard…</p>;
+  if (loading) return <p className="text-[var(--text-muted)]">Loading dashboard…</p>;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-medium text-[#1F1F1F]">Dashboard</h1>
+        <h1 className="text-2xl font-medium text-[var(--text)]">Dashboard</h1>
         <select
           value={range}
           onChange={(e) => setRange(e.target.value)}
@@ -126,10 +126,10 @@ export default function Dashboard() {
           {filteredSubmissions.map((s) => (
             <li key={s.id} className="flex items-center justify-between gap-3 py-2 text-sm">
               <div className="min-w-0">
-                <div className="font-medium text-[#1F1F1F] truncate">{s.name || s.studentId}</div>
-                <div className="text-xs text-[#00000099] truncate">{testNamesById[s.testId] || s.testId}</div>
+                <div className="font-medium text-[var(--text)] truncate">{s.name || s.studentId}</div>
+                <div className="text-xs text-[var(--text-muted)] truncate">{testNamesById[s.testId] || s.testId}</div>
               </div>
-              <span className="text-xs text-[#00000066] flex-shrink-0">{timeAgo(toDate(s.submittedAt))}</span>
+              <span className="text-xs text-[var(--text-muted)] flex-shrink-0">{timeAgo(toDate(s.submittedAt))}</span>
             </li>
           ))}
         </RecentCard>
@@ -138,7 +138,7 @@ export default function Dashboard() {
           {filteredCreated.map((t) => (
             <li key={t.id} className="py-2 text-sm">
               <Link to={`/manage/${t.id}`} className="font-medium text-brand hover:underline truncate block">{t.displayName}</Link>
-              <span className="text-xs text-[#00000066]">{timeAgo(toDate(t.createdAt))}</span>
+              <span className="text-xs text-[var(--text-muted)]">{timeAgo(toDate(t.createdAt))}</span>
             </li>
           ))}
         </RecentCard>
@@ -147,7 +147,7 @@ export default function Dashboard() {
           {filteredEdited.map((t) => (
             <li key={t.id} className="py-2 text-sm">
               <Link to={`/manage/${t.id}`} className="font-medium text-brand hover:underline truncate block">{t.displayName}</Link>
-              <span className="text-xs text-[#00000066]">{timeAgo(toDate(t.updatedAt))}</span>
+              <span className="text-xs text-[var(--text-muted)]">{timeAgo(toDate(t.updatedAt))}</span>
             </li>
           ))}
         </RecentCard>
@@ -160,11 +160,11 @@ function RecentCard({ title, empty, children }) {
   const hasChildren = Array.isArray(children) ? children.length > 0 : Boolean(children);
   return (
     <div className="gcard !p-5">
-      <h3 className="text-sm font-semibold text-[#1F1F1F] mb-2">{title}</h3>
+      <h3 className="text-sm font-semibold text-[var(--text)] mb-2">{title}</h3>
       {hasChildren ? (
-        <ul className="divide-y divide-[#00000008]">{children}</ul>
+        <ul className="divide-y divide-[var(--line)]">{children}</ul>
       ) : (
-        <p className="text-sm text-[#00000099] py-6 text-center">{empty}</p>
+        <p className="text-sm text-[var(--text-muted)] py-6 text-center">{empty}</p>
       )}
     </div>
   );

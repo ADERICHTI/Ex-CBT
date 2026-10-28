@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../features/auth/useAuth.js';
 import { createTest } from '../../services/firestore';
 import {
   ALLOWED_USERS_CSV_TEMPLATE,
@@ -121,22 +121,22 @@ export default function NewTest() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="text-2xl font-medium text-[#1F1F1F] mb-6">New Test</h1>
+      <h1 className="text-2xl font-medium text-[var(--text)] mb-6">New Test</h1>
 
       <div className="gcard mb-6 space-y-4">
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-[#1F1F1F] mb-1">Test ID</label>
+            <label className="block text-sm font-medium text-[var(--text)] mb-1">Test ID</label>
             <input
               className="input-field"
               value={adminEnteredId}
               onChange={(e) => setAdminEnteredId(e.target.value)}
               placeholder="e.g. eme401"
             />
-            <p className="text-xs text-[#00000099] mt-1">A random suffix is appended automatically, e.g. eme401-vg63f127.</p>
+            <p className="text-xs text-[var(--text-muted)] mt-1">A random suffix is appended automatically, e.g. eme401-vg63f127.</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#1F1F1F] mb-1">Display Name</label>
+            <label className="block text-sm font-medium text-[var(--text)] mb-1">Display Name</label>
             <input
               className="input-field"
               value={displayName}
@@ -147,7 +147,7 @@ export default function NewTest() {
         </div>
 
         <div className="max-w-[160px]">
-          <label className="block text-sm font-medium text-[#1F1F1F] mb-1">Time Limit (minutes)</label>
+          <label className="block text-sm font-medium text-[var(--text)] mb-1">Time Limit (minutes)</label>
           <input
             type="number"
             min="1"
@@ -160,7 +160,7 @@ export default function NewTest() {
 
       <div className="gcard mb-6">
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-          <h2 className="text-sm font-semibold text-[#1F1F1F]">Upload Questions</h2>
+          <h2 className="text-sm font-semibold text-[var(--text)]">Upload Questions</h2>
           <div className="flex gap-2">
             <button type="button" onClick={() => handleCopy('csv', CSV_TEMPLATE)} className="text-xs font-medium text-brand hover:underline">
               {copiedLabel === 'csv' ? 'Copied!' : 'Copy CSV template'}
@@ -172,14 +172,14 @@ export default function NewTest() {
           </div>
         </div>
 
-        <p className="text-xs text-[#00000099] mb-4">
+        <p className="text-xs text-[var(--text-muted)] mb-4">
           Each question needs a <code>question</code>, an <code>options</code> list, and an <code>answer</code> that exactly matches one option.
           In CSV, separate options with a pipe (<code>|</code>). Copy a template above to get the exact shape.
         </p>
 
         <div className="upload-dropzone" onClick={() => fileInputRef.current?.click()}>
-          <i className="fa-solid fa-file-arrow-up text-2xl text-[#00000099] mb-2"></i>
-          <p className="text-sm text-[#00000099] font-medium">Click to upload a .csv or .json file</p>
+          <i className="fa-solid fa-file-arrow-up text-2xl text-[var(--text-muted)] mb-2"></i>
+          <p className="text-sm text-[var(--text-muted)] font-medium">Click to upload a .csv or .json file</p>
           <input ref={fileInputRef} type="file" accept=".csv,.json,application/json,text/csv" className="hidden" onChange={handleFile} />
         </div>
 
@@ -188,7 +188,7 @@ export default function NewTest() {
         {rows.length > 0 && (
           <div className="mt-6">
             <div className="flex items-center gap-4 mb-3 text-sm">
-              <span className="text-[#1E7E34] font-medium">{validRows.length} valid</span>
+              <span className="text-[var(--success)] font-medium">{validRows.length} valid</span>
               {invalidCount > 0 && <span className="text-red-500 font-medium">{invalidCount} needs fixing</span>}
             </div>
             <SpreadsheetTable
@@ -197,7 +197,7 @@ export default function NewTest() {
                 { key: 'question', label: 'Question' },
                 { key: 'options', label: 'Options', render: (v) => v.join(' | ') },
                 { key: 'answer', label: 'Answer', width: 140 },
-                { key: 'status', label: 'Status', width: 160, render: (_, row) => (row.valid ? <span className="text-[#1E7E34]"><i className="fa-solid fa-check"></i> OK</span> : <span className="text-red-500 text-xs">{row.errors.join(', ')}</span>) },
+                { key: 'status', label: 'Status', width: 160, render: (_, row) => (row.valid ? <span className="text-[var(--success)]"><i className="fa-solid fa-check"></i> OK</span> : <span className="text-red-500 text-xs">{row.errors.join(', ')}</span>) },
               ]}
               rows={rows}
             />
@@ -208,9 +208,9 @@ export default function NewTest() {
       <div className="gcard mb-6">
         <label className="flex items-center gap-2.5 cursor-pointer">
           <input type="checkbox" checked={restrictAccess} onChange={(e) => setRestrictAccess(e.target.checked)} />
-          <span className="text-sm font-semibold text-[#1F1F1F]">Restrict access to specific students</span>
+          <span className="text-sm font-semibold text-[var(--text)]">Restrict access to specific students</span>
         </label>
-        <p className="text-xs text-[#00000099] mt-1 mb-4">
+        <p className="text-xs text-[var(--text-muted)] mt-1 mb-4">
           When on, only students whose name and Student ID exactly match an entry below can start this test.
         </p>
 
@@ -236,7 +236,7 @@ export default function NewTest() {
             {allowedRows.length > 0 ? (
               <>
                 <div className="flex items-center gap-4 mb-3 text-sm">
-                  <span className="text-[#1E7E34] font-medium">{validAllowedRows.length} valid</span>
+                  <span className="text-[var(--success)] font-medium">{validAllowedRows.length} valid</span>
                   {invalidAllowedCount > 0 && <span className="text-red-500 font-medium">{invalidAllowedCount} needs fixing</span>}
                 </div>
                 <SpreadsheetTable
@@ -252,7 +252,7 @@ export default function NewTest() {
                 />
               </>
             ) : (
-              <p className="text-sm text-[#00000099] py-6 text-center">No students added yet.</p>
+              <p className="text-sm text-[var(--text-muted)] py-6 text-center">No students added yet.</p>
             )}
           </>
         )}
@@ -261,9 +261,9 @@ export default function NewTest() {
       <div className="gcard mb-6">
         <label className="flex items-center gap-2.5 cursor-pointer">
           <input type="checkbox" checked={strictMode} onChange={(e) => setStrictMode(e.target.checked)} />
-          <span className="text-sm font-semibold text-[#1F1F1F]">Strict mode</span>
+          <span className="text-sm font-semibold text-[var(--text)]">Strict mode</span>
         </label>
-        <p className="text-xs text-[#00000099] mt-1">
+        <p className="text-xs text-[var(--text-muted)] mt-1">
           Hides the exit button and locks the browser into fullscreen. If a student switches tabs, exits fullscreen, or navigates away, a 3-second countdown starts and the test auto-submits unless they return in time.
         </p>
       </div>

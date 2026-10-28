@@ -1,5 +1,5 @@
 {
-  "name": "ex-cbt",
+  "name": "hypercbt",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev:emulators": "vite --mode emulators",
+    "emulators": "firebase emulators:start --only auth,firestore,functions"
   },
   "dependencies": {
     "firebase": "^12.17.1",
-    "firebase-functions": "^7.4.0",
+    "lucide-react": "^1.63.0",
     "papaparse": "^5.4.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

@@ -1,10 +1,9 @@
 // Shown in place of a blank screen while auth/route/data guards are resolving.
-export default function LoadingScreen() {
+export default function LoadingScreen({ label = 'Loading…' }) {
   return (
-    <div className="app-loading">
-      <div className="app-loading-spinner">
-        <i className="fa-solid fa-graduation-cap"></i>
-      </div>
+    <div className="app-loading" role="status">
+      <div className="app-loading-spinner" />
+      <span>{label}</span>
     </div>
-  );
+  )
 }

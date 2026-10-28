@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../features/auth/useAuth.js';
 import { deleteSubmission, deleteTest, getTest, getTestRoster, listSubmissionsForTest, updateTest } from '../../services/firestore';
 import {
   ALLOWED_USERS_CSV_TEMPLATE,
@@ -239,13 +239,13 @@ export default function TestDetail() {
     downloadCsv(`${testId}-submissions.csv`, submissionsToCsv(rows));
   }
 
-  if (loading) return <p className="text-[#00000080]">Loading…</p>;
-  if (!test) return <p className="text-[#00000080]">Test not found.</p>;
-  if (test.createdBy !== user.email) return <p className="text-[#00000080]">You don't have access to manage this test.</p>;
+  if (loading) return <p className="text-[var(--text-muted)]">Loading…</p>;
+  if (!test) return <p className="text-[var(--text-muted)]">Test not found.</p>;
+  if (test.createdBy !== user.email) return <p className="text-[var(--text-muted)]">You don't have access to manage this test.</p>;
 
   return (
     <div>
-      <Link to="/manage/tests" className="text-sm text-[#00000099] hover:text-[#1F1F1F] mb-4 inline-flex items-center gap-1">
+      <Link to="/manage/tests" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] mb-4 inline-flex items-center gap-1">
         <i className="fa-solid fa-chevron-left"></i> All tests
       </Link>
 
@@ -256,9 +256,9 @@ export default function TestDetail() {
             {editing ? (
               <input className="input-field text-xl font-bold" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
             ) : (
-              <h1 className="text-2xl font-medium text-[#1F1F1F]">{test.displayName}</h1>
+              <h1 className="text-2xl font-medium text-[var(--text)]">{test.displayName}</h1>
             )}
-            <p className="text-xs font-mono text-[#00000099] mt-1">{test.id}</p>
+            <p className="text-xs font-mono text-[var(--text-muted)] mt-1">{test.id}</p>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
@@ -312,24 +312,24 @@ export default function TestDetail() {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-sm border-t border-[#00000008] pt-4">
           <div>
-            <div className="text-xs text-[#00000099] uppercase tracking-wide mb-1">Questions</div>
-            <div className="font-semibold text-[#1F1F1F]">{test.questions?.length ?? 0}</div>
+            <div className="text-xs text-[var(--text-muted)] uppercase tracking-wide mb-1">Questions</div>
+            <div className="font-semibold text-[var(--text)]">{test.questions?.length ?? 0}</div>
           </div>
           <div>
-            <div className="text-xs text-[#00000099] uppercase tracking-wide mb-1">Time Limit</div>
+            <div className="text-xs text-[var(--text-muted)] uppercase tracking-wide mb-1">Time Limit</div>
             {editing ? (
               <input type="number" className="input-field !py-1 !px-2 w-20" value={minutes} onChange={(e) => setMinutes(e.target.value)} />
             ) : (
-              <div className="font-semibold text-[#1F1F1F]">{test.minutes} min</div>
+              <div className="font-semibold text-[var(--text)]">{test.minutes} min</div>
             )}
           </div>
           <div>
-            <div className="text-xs text-[#00000099] uppercase tracking-wide mb-1">Submissions</div>
-            <div className="font-semibold text-[#1F1F1F]">{test.submissionCount ?? 0}</div>
+            <div className="text-xs text-[var(--text-muted)] uppercase tracking-wide mb-1">Submissions</div>
+            <div className="font-semibold text-[var(--text)]">{test.submissionCount ?? 0}</div>
           </div>
           <div>
-            <div className="text-xs text-[#00000099] uppercase tracking-wide mb-1">Created</div>
-            <div className="font-semibold text-[#1F1F1F]">{toDate(test.createdAt)?.toLocaleDateString() ?? '—'}</div>
+            <div className="text-xs text-[var(--text-muted)] uppercase tracking-wide mb-1">Created</div>
+            <div className="font-semibold text-[var(--text)]">{toDate(test.createdAt)?.toLocaleDateString() ?? '—'}</div>
           </div>
         </div>
       </div>
@@ -342,8 +342,8 @@ export default function TestDetail() {
             onClick={() => setAccessOpen((open) => !open)}
             className="flex items-center gap-2 text-left"
           >
-            <i className={`fa-solid fa-chevron-right text-xs text-[#00000099] transition-transform ${accessOpen ? 'rotate-90' : ''}`}></i>
-            <h2 className="text-lg font-medium text-[#1F1F1F]">Access Restriction</h2>
+            <i className={`fa-solid fa-chevron-right text-xs text-[var(--text-muted)] transition-transform ${accessOpen ? 'rotate-90' : ''}`}></i>
+            <h2 className="text-lg font-medium text-[var(--text)]">Access Restriction</h2>
           </button>
           {!accessEditing && (
             <div className="flex items-center gap-2 flex-wrap">
@@ -375,11 +375,11 @@ export default function TestDetail() {
 
         {accessOpen && (!accessEditing ? (
           <>
-            <p className="text-sm text-[#00000099] mt-1">
+            <p className="text-sm text-[var(--text-muted)] mt-1">
               {restrictAccess && test.allowedUsers?.length ? (
-                <><span className="font-semibold text-[#1F1F1F]">{test.allowedUsers.length} student{test.allowedUsers.length === 1 ? '' : 's'}</span> may start this test — everyone else is blocked.</>
+                <><span className="font-semibold text-[var(--text)]">{test.allowedUsers.length} student{test.allowedUsers.length === 1 ? '' : 's'}</span> may start this test — everyone else is blocked.</>
               ) : test.allowedUsers?.length ? (
-                <>Restriction is off — anyone with the link may start, even though <span className="font-semibold text-[#1F1F1F]">{test.allowedUsers.length} saved student{test.allowedUsers.length === 1 ? '' : 's'}</span> would apply if turned on.</>
+                <>Restriction is off — anyone with the link may start, even though <span className="font-semibold text-[var(--text)]">{test.allowedUsers.length} saved student{test.allowedUsers.length === 1 ? '' : 's'}</span> would apply if turned on.</>
               ) : (
                 'Open to anyone with the link.'
               )}
@@ -387,7 +387,7 @@ export default function TestDetail() {
             {test.allowedUsers?.length > 0 && (
               <ul className="mt-3 flex flex-wrap gap-2">
                 {test.allowedUsers.map((u) => (
-                  <li key={u.studentId} className="text-xs bg-[#00000008] rounded-full px-3 py-1 text-[#00000099]">
+                  <li key={u.studentId} className="text-xs bg-[var(--fill)] rounded-full px-3 py-1 text-[var(--text-muted)]">
                     {u.name} <span className="font-mono">({u.studentId})</span>
                   </li>
                 ))}
@@ -411,7 +411,7 @@ export default function TestDetail() {
               </button>
             </div>
 
-            <p className="text-xs text-[#00000099] mb-3">Clear the list entirely and save to reopen this test to anyone with the link.</p>
+            <p className="text-xs text-[var(--text-muted)] mb-3">Clear the list entirely and save to reopen this test to anyone with the link.</p>
 
             {allowedParseError && <p className="text-sm text-red-500 mb-3">{allowedParseError}</p>}
 
@@ -431,7 +431,7 @@ export default function TestDetail() {
             />
 
             <div className="flex gap-3 mt-4">
-              <button onClick={handleCancelAccessEdit} className="px-4 py-2.5 rounded-full text-[#00000099] text-sm font-medium hover:bg-[#00000008]">Cancel</button>
+              <button onClick={handleCancelAccessEdit} className="px-4 py-2.5 rounded-full text-[var(--text-muted)] text-sm font-medium hover:bg-[var(--fill)]">Cancel</button>
               <button onClick={handleSaveAccess} disabled={accessSaving || invalidAllowedCount > 0} className="gpill gpill-primary !px-5 !py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                 {accessSaving ? 'Saving…' : 'Save'}
               </button>
@@ -448,8 +448,8 @@ export default function TestDetail() {
             onClick={() => setSubmissionsOpen((open) => !open)}
             className="flex items-center gap-2 text-left"
           >
-            <i className={`fa-solid fa-chevron-right text-xs text-[#00000099] transition-transform ${submissionsOpen ? 'rotate-90' : ''}`}></i>
-            <h2 className="text-lg font-medium text-[#1F1F1F]">Submissions</h2>
+            <i className={`fa-solid fa-chevron-right text-xs text-[var(--text-muted)] transition-transform ${submissionsOpen ? 'rotate-90' : ''}`}></i>
+            <h2 className="text-lg font-medium text-[var(--text)]">Submissions</h2>
           </button>
           {submissionsOpen && (
             <div className="flex items-center gap-2 flex-wrap">
@@ -459,13 +459,13 @@ export default function TestDetail() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-              <label className="flex items-center gap-1.5 text-xs text-[#00000099]">
+              <label className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                 <input type="checkbox" checked={submittedOnly} onChange={(e) => setSubmittedOnly(e.target.checked)} />
                 Submitted only
               </label>
-              <div className="flex rounded-full bg-[#00000008] p-1">
-                <button onClick={() => setView('list')} className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${view === 'list' ? 'bg-white text-[#1F1F1F] shadow-sm' : 'text-[#00000099]'}`}>List</button>
-                <button onClick={() => setView('spreadsheet')} className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${view === 'spreadsheet' ? 'bg-white text-[#1F1F1F] shadow-sm' : 'text-[#00000099]'}`}>Spreadsheet</button>
+              <div className="flex rounded-full bg-[var(--fill)] p-1">
+                <button onClick={() => setView('list')} className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${view === 'list' ? 'bg-[var(--surface)] text-[var(--text)] shadow-sm' : 'text-[var(--text-muted)]'}`}>List</button>
+                <button onClick={() => setView('spreadsheet')} className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${view === 'spreadsheet' ? 'bg-[var(--surface)] text-[var(--text)] shadow-sm' : 'text-[var(--text-muted)]'}`}>Spreadsheet</button>
               </div>
               <button onClick={handleDownloadCsv} className="gpill gpill-neutral">
                 <i className="fa-solid fa-download"></i> CSV
@@ -483,7 +483,7 @@ export default function TestDetail() {
               { key: 'testTaken', label: 'Submitted', render: (v) => (v ? 'Yes' : 'No') },
               { key: 'submittedAt', label: 'Submitted At', render: (v) => toDate(v)?.toLocaleString() ?? '—' },
               { key: 'deleteAction', label: '', width: 40, render: (_, row) => (
-                <button type="button" onClick={() => setDeleteSubmissionTarget(row)} className="text-[#C5221F] hover:opacity-70" title="Delete submission">
+                <button type="button" onClick={() => setDeleteSubmissionTarget(row)} className="text-[var(--danger)] hover:opacity-70" title="Delete submission">
                   <i className="fa-solid fa-trash"></i>
                 </button>
               ) },
@@ -492,19 +492,19 @@ export default function TestDetail() {
             emptyMessage="No submissions match your filters."
           />
         ) : (
-          <ul className="divide-y divide-[#00000008]">
-            {filteredSubmissions.length === 0 && <p className="text-sm text-[#00000099] py-8 text-center">No submissions match your filters.</p>}
+          <ul className="divide-y divide-[var(--line)]">
+            {filteredSubmissions.length === 0 && <p className="text-sm text-[var(--text-muted)] py-8 text-center">No submissions match your filters.</p>}
             {filteredSubmissions.map((s) => (
               <li key={s.id} className="flex items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
-                  <div className="font-medium text-[#1F1F1F] truncate">{s.name} <span className="text-[#00000099] font-mono text-xs">({s.studentId})</span></div>
-                  <div className="text-xs text-[#00000099]">{s.testTaken ? `Submitted ${toDate(s.submittedAt)?.toLocaleString() ?? ''}` : 'In progress / not submitted'}</div>
+                  <div className="font-medium text-[var(--text)] truncate">{s.name} <span className="text-[var(--text-muted)] font-mono text-xs">({s.studentId})</span></div>
+                  <div className="text-xs text-[var(--text-muted)]">{s.testTaken ? `Submitted ${toDate(s.submittedAt)?.toLocaleString() ?? ''}` : 'In progress / not submitted'}</div>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
                   {s.testTaken && (
-                    <span className="text-sm font-semibold text-[#1F1F1F]">{s.score}/{test.questions?.length ?? '?'}</span>
+                    <span className="text-sm font-semibold text-[var(--text)]">{s.score}/{test.questions?.length ?? '?'}</span>
                   )}
-                  <button type="button" onClick={() => setDeleteSubmissionTarget(s)} className="text-[#C5221F] hover:opacity-70" title="Delete submission">
+                  <button type="button" onClick={() => setDeleteSubmissionTarget(s)} className="text-[var(--danger)] hover:opacity-70" title="Delete submission">
                     <i className="fa-solid fa-trash"></i>
                   </button>
                 </div>
@@ -516,10 +516,10 @@ export default function TestDetail() {
 
       {deleteSubmissionTarget && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-6 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-            <h3 className="font-medium text-[#1F1F1F] text-lg mb-2">Delete this submission?</h3>
-            <p className="text-sm text-[#00000099] mb-4">
-              This removes <span className="font-semibold text-[#1F1F1F]">{deleteSubmissionTarget.name}</span>'s attempt ({deleteSubmissionTarget.studentId}) permanently. Type the test ID <span className="font-mono font-semibold">{testId}</span> to confirm.
+          <div className="bg-[var(--surface)] rounded-2xl p-6 w-full max-w-sm shadow-xl">
+            <h3 className="font-medium text-[var(--text)] text-lg mb-2">Delete this submission?</h3>
+            <p className="text-sm text-[var(--text-muted)] mb-4">
+              This removes <span className="font-semibold text-[var(--text)]">{deleteSubmissionTarget.name}</span>'s attempt ({deleteSubmissionTarget.studentId}) permanently. Type the test ID <span className="font-mono font-semibold">{testId}</span> to confirm.
             </p>
             <input
               className="input-field mb-4"
@@ -528,11 +528,11 @@ export default function TestDetail() {
               placeholder={testId}
             />
             <div className="flex gap-3">
-              <button onClick={() => { setDeleteSubmissionTarget(null); setDeleteSubmissionConfirmText(''); }} className="flex-1 py-2.5 rounded-full text-[#00000099] font-medium hover:bg-[#00000008]">Cancel</button>
+              <button onClick={() => { setDeleteSubmissionTarget(null); setDeleteSubmissionConfirmText(''); }} className="flex-1 py-2.5 rounded-full text-[var(--text-muted)] font-medium hover:bg-[var(--fill)]">Cancel</button>
               <button
                 onClick={handleDeleteSubmission}
                 disabled={deleteSubmissionConfirmText !== testId || deletingSubmission}
-                className="flex-1 py-2.5 bg-[#C5221F] text-white rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-2.5 bg-[var(--danger)] text-white rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {deletingSubmission ? 'Deleting…' : 'Delete'}
               </button>
@@ -543,9 +543,9 @@ export default function TestDetail() {
 
       {deleteOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-6 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-            <h3 className="font-medium text-[#1F1F1F] text-lg mb-2">Delete this test?</h3>
-            <p className="text-sm text-[#00000099] mb-4">This can't be undone. Type <span className="font-mono font-semibold">{testId}</span> to confirm.</p>
+          <div className="bg-[var(--surface)] rounded-2xl p-6 w-full max-w-sm shadow-xl">
+            <h3 className="font-medium text-[var(--text)] text-lg mb-2">Delete this test?</h3>
+            <p className="text-sm text-[var(--text-muted)] mb-4">This can't be undone. Type <span className="font-mono font-semibold">{testId}</span> to confirm.</p>
             <input
               className="input-field mb-4"
               value={deleteConfirmText}
@@ -553,11 +553,11 @@ export default function TestDetail() {
               placeholder={testId}
             />
             <div className="flex gap-3">
-              <button onClick={() => { setDeleteOpen(false); setDeleteConfirmText(''); }} className="flex-1 py-2.5 rounded-full text-[#00000099] font-medium hover:bg-[#00000008]">Cancel</button>
+              <button onClick={() => { setDeleteOpen(false); setDeleteConfirmText(''); }} className="flex-1 py-2.5 rounded-full text-[var(--text-muted)] font-medium hover:bg-[var(--fill)]">Cancel</button>
               <button
                 onClick={handleDelete}
                 disabled={deleteConfirmText !== testId || deleting}
-                className="flex-1 py-2.5 bg-[#C5221F] text-white rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-2.5 bg-[var(--danger)] text-white rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {deleting ? 'Deleting…' : 'Delete'}
               </button>

@@ -1,0 +1,397 @@
+/* Candidate screens: start, the test itself, submitted. */
+.take-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: clamp(20px, 3vw, 32px);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.take-card h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.take-center {
+  max-width: 460px;
+  margin: clamp(16px, 8vh, 80px) auto;
+  align-items: center;
+  text-align: center;
+}
+
+.take-icon {
+  color: var(--accent);
+}
+
+.take-icon-warn {
+  color: var(--warning);
+}
+
+.take-icon-ok {
+  color: var(--success);
+}
+
+.take-muted {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.take-signin-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.take-progress {
+  height: 4px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--fill-strong);
+}
+
+.take-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.25s var(--ease);
+}
+
+/* ── Start ─────────────────────────────────────────────── */
+.start {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 460px;
+  margin: clamp(8px, 5vh, 56px) auto;
+}
+
+.start-head {
+  text-align: center;
+}
+
+.start-head h1 {
+  margin: 0 0 8px;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.start-meta {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.start-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.take-note {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-control);
+  background: var(--fill);
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.take-note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.take-signed-as {
+  margin: -4px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* ── The test ──────────────────────────────────────────── */
+.attempt {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 100dvh;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 16px clamp(12px, 3vw, 40px) 24px;
+}
+
+.attempt-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.attempt-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.attempt-title span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attempt-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.attempt-timer,
+.attempt-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.attempt-timer {
+  background: var(--fill);
+  color: var(--text-muted);
+}
+
+/* Time running low: a warning hue that isn't the brand orange, then red. */
+.attempt-timer.warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.attempt-timer.danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+  animation: attempt-pulse 1s infinite;
+}
+
+@keyframes attempt-pulse {
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.attempt-count {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.attempt-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 16px;
+  align-items: start;
+}
+
+.attempt-qnum {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.take-card .attempt-qtext {
+  font-size: clamp(18px, 2.2vw, 22px);
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.attempt-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--bg);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.option:hover {
+  border-color: var(--accent);
+}
+
+.option.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.option-badge {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--fill-strong);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.option.selected .option-badge {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.attempt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.attempt-actions .btn {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* Submit: dark, apart from the brand-coloured Next. */
+.btn-dark {
+  border: 0;
+  background: var(--text);
+  color: var(--bg);
+}
+
+.btn-dark:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.attempt-nav {
+  position: sticky;
+  top: 16px;
+  gap: 12px;
+}
+
+.attempt-nav-title {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.attempt-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 8px;
+}
+
+.qnav {
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.qnav:hover {
+  border-color: var(--accent);
+}
+
+.qnav.answered {
+  border-color: transparent;
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.qnav.current {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.attempt-nav-key {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* Strict mode: left the tab / full screen - countdown to auto-submit. */
+.attempt-leave {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  background: #b91c1c;
+  color: #fff;
+  text-align: center;
+}
+
+.attempt-leave h2 {
+  margin: 8px 0 0;
+  font-size: 24px;
+}
+
+.attempt-leave p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.attempt-leave-count {
+  font-size: 64px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.attempt-leave-btn {
+  border: 0;
+  background: #fff;
+  color: #b91c1c;
+}
+
+@media (max-width: 860px) {
+  .attempt-main {
+    grid-template-columns: 1fr;
+  }
+
+  /* Phones: the question grid follows the question instead of a side column. */
+  .attempt-nav {
+    position: static;
+  }
+}

@@ -1,146 +1,238 @@
+/* HyperCBT design tokens - the Quality Tools design system (as in PeraForm):
+   near-white canvas, hairline dividers, pill shapes, one accent. HyperCBT's
+   accent is orange-amber: #EA7A10 is the brand (logo); buttons and links use
+   a deeper shade in light mode so white text on them stays readable (4.7:1),
+   and a lighter one with dark text in dark mode (8.5:1). Components only ever
+   use the tokens. */
 :root {
-  /* Minimalist design tokens (from mnldsg): monochrome, translucent blacks on
-     an off-white canvas, hairline dividers and near-invisible shadows. The
-     --gm-* names are kept so every stylesheet picks the new look up as-is. */
-  --mn-canvas: #fbfcff;
-  --mn-hairline: #00000008;
-  --mn-faint: #00000015;
+  --bg: #fbfcff;
+  --surface: #ffffff;
+  --surface-center: #ffffff50;
+  --fill: rgb(0 0 0 / 0.05);
+  --fill-strong: rgb(0 0 0 / 0.08);
+  --line: rgb(0 0 0 / 0.06);
+  --text: #14151a;
+  --text-muted: #6b6f7b;
+  --brand: #ea7a10;
+  --accent: #b85a00;
+  --accent-hover: #9a4a00;
+  --accent-soft: rgb(234 122 16 / 0.12);
+  --on-accent: #ffffff;
+  --shadow: 0 0 10px rgb(0 0 0 / 0.03), 0 1px 2px rgb(0 0 0 / 0.03);
+  --backdrop: rgb(15 16 20 / 0.3);
+  --success: #16a34a;
+  --success-soft: rgb(22 163 74 / 0.1);
+  --warning: #b45309;
+  --warning-soft: rgb(245 158 11 / 0.14);
+  --danger: #dc2626;
+  --danger-soft: rgb(220 38 38 / 0.1);
+  --scrollbar-rgb: 100 100 100;
 
-  /* Brand: orange-amber, used for actions/selection/active state only */
-  --brand: #EA7A10;
-  --brand-dark: #C2610A;
-  --brand-soft: #FFF3E6;
-  --brand-soft-hover: #FFE6CC;
-  --brand-line: #FAD3A8;
-  --brand-ink: #7A3A05;
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --radius-pill: 999px;
+  --radius-card: 12px;
+  --radius-control: 10px;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
 
-  --gm-surface: #FFFFFF;
-  --gm-surface-container: #00000008;
-  --gm-on-surface: #1F1F1F;
-  --gm-on-surface-variant: #00000099;
-  --gm-outline: #00000012;
-
-  --gm-primary: var(--brand);
-  --gm-primary-dark: var(--brand-dark);
-  --gm-on-primary: #FFFFFF;
-
-  --gm-secondary-container: var(--brand-soft);
-  --gm-secondary-container-hover: var(--brand-soft-hover);
-  --gm-on-secondary-container: var(--brand-ink);
-
+  /* Older names still used by the test-management screens until they're
+     rebuilt (stage 2); they follow the tokens above, light and dark. */
+  --gm-surface: var(--surface);
+  --gm-surface-container: var(--fill);
+  --gm-on-surface: var(--text);
+  --gm-on-surface-variant: var(--text-muted);
+  --gm-outline: var(--line);
+  --gm-primary: var(--accent);
+  --gm-primary-dark: var(--accent-hover);
+  --gm-on-primary: var(--on-accent);
+  --gm-secondary-container: var(--accent-soft);
+  --gm-secondary-container-hover: var(--fill-strong);
+  --gm-on-secondary-container: var(--accent);
   --gm-radius-sm: 8px;
-  --gm-radius-md: 10px;
+  --gm-radius-md: var(--radius-card);
   --gm-radius-lg: 20px;
-  --gm-radius-full: 999px;
+  --gm-radius-full: var(--radius-pill);
+  --gm-shadow-soft: var(--shadow);
+  --mn-canvas: var(--bg);
+  --mn-hairline: var(--line);
+  --mn-faint: var(--fill-strong);
+  --brand-dark: var(--accent-hover);
+  --brand-soft: var(--accent-soft);
+  --brand-line: var(--line);
+  --brand-ink: var(--accent);
 
-  --gm-shadow-soft: 0 0 10px #00000008;
+  color-scheme: light;
 }
 
-html, body {
-  height: 100%;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0e0f13;
+    --surface: #15161b;
+    --surface-center: #15161b20;
+    --fill: rgb(255 255 255 / 0.06);
+    --fill-strong: rgb(255 255 255 / 0.1);
+    --line: rgb(255 255 255 / 0.07);
+    --text: #ecedf2;
+    --text-muted: #9a9eab;
+    --accent: #fb923c;
+    --accent-hover: #fdba74;
+    --accent-soft: rgb(251 146 60 / 0.14);
+    --on-accent: #0e0f13;
+    --shadow: 0 0 10px rgb(0 0 0 / 0.3);
+    --backdrop: rgb(0 0 0 / 0.5);
+    --success: #4ade80;
+    --success-soft: rgb(74 222 128 / 0.12);
+    --warning: #fbbf24;
+    --warning-soft: rgb(251 191 36 / 0.14);
+    --danger: #f87171;
+    --danger-soft: rgb(248 113 113 / 0.14);
+    --scrollbar-rgb: 121 121 121;
+    color-scheme: dark;
+  }
 }
 
+:root[data-theme='dark'] {
+  --bg: #0e0f13;
+  --surface: #15161b;
+  --surface-center: #15161b20;
+  --fill: rgb(255 255 255 / 0.06);
+  --fill-strong: rgb(255 255 255 / 0.1);
+  --line: rgb(255 255 255 / 0.07);
+  --text: #ecedf2;
+  --text-muted: #9a9eab;
+  --accent: #fb923c;
+  --accent-hover: #fdba74;
+  --accent-soft: rgb(251 146 60 / 0.14);
+  --on-accent: #0e0f13;
+  --shadow: 0 0 10px rgb(0 0 0 / 0.3);
+  --backdrop: rgb(0 0 0 / 0.5);
+  --success: #4ade80;
+  --success-soft: rgb(74 222 128 / 0.12);
+  --warning: #fbbf24;
+  --warning-soft: rgb(251 191 36 / 0.14);
+  --danger: #f87171;
+  --danger-soft: rgb(248 113 113 / 0.14);
+  --scrollbar-rgb: 121 121 121;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Scrollbars, VS Code-sized (the rule for all apps): a 14px transparent
+   track with an 8px rounded grey thumb, no arrow buttons; the thumb shows
+   while the pointer is over the area that scrolls. No scrollbar-width /
+   scrollbar-color here: in Chromium 121+ those override these styles and
+   bring back the thin bar and arrows. */
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 7px;
+  background-clip: content-box;
+  background-color: transparent;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--scrollbar-rgb) / 0.4);
+}
+
+*:hover::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--scrollbar-rgb) / 0.7);
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background-color: rgb(var(--scrollbar-rgb) / 0.8);
+}
+
+html,
 body {
-  font-family: 'Inter', sans-serif;
-  background: var(--mn-canvas);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100dvh;
   margin: 0;
-  padding: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-#root {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* "body" lifts these above Tailwind's reset (loaded after this file while
+   the stage-1 management screens still use it); class utilities still win. */
+body :is(h1, h2, h3) {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* Full-screen loading state (components/LoadingScreen.jsx). */
 .app-loading {
   position: fixed;
   inset: 0;
+  z-index: 50;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--mn-canvas);
-  z-index: 9999;
+  gap: 14px;
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 13px;
 }
+
 .app-loading-spinner {
-  position: relative;
-  width: 64px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.app-loading-spinner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border: 2px solid var(--mn-faint);
-  border-top-color: var(--gm-primary);
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--fill-strong);
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: app-loading-spin 0.8s linear infinite;
 }
-.app-loading-spinner i {
-  font-size: 20px;
-  color: var(--gm-on-surface-variant);
-}
-@keyframes app-loading-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
 
-/* --- Minimalist chrome shared by the public and admin shells --- */
-.mn-navbar {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 24px 10%;
-  width: 100%;
-  flex-shrink: 0;
-  background: transparent;
-}
-/* Short centred hairline under the navbar, not a full-width rule */
-.mn-navbar::before {
-  content: '';
-  position: absolute;
-  left: 30%;
-  width: 40%;
-  bottom: 0;
-  border-bottom: 1px solid var(--mn-hairline);
-}
-.mn-logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px 14px;
-  border: 1px solid var(--brand-line);
-  border-radius: 30px;
-  background: var(--brand-soft);
-  color: var(--brand-dark);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  white-space: nowrap;
-}
-.mn-footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px 10%;
-  width: 100%;
-  flex-shrink: 0;
-  font-size: 11px;
-  color: #00000055;
-}
-@media (max-width: 480px) {
-  .mn-navbar { padding: 16px; }
-  .mn-footer { padding: 12px 16px; }
+@keyframes app-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

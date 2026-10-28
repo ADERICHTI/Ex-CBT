@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../features/auth/useAuth.js';
 import { getTest, getTestAnswerKey, updateTest } from '../../services/firestore';
 import { downloadCsv, downloadJson, normalizeQuestion, questionsToCsv } from '../../services/csv';
 import SpreadsheetTable from '../../components/SpreadsheetTable';
@@ -72,21 +72,21 @@ export default function QuestionsEditor() {
     }
   }
 
-  if (loading) return <p className="text-[#00000080]">Loading…</p>;
-  if (!test) return <p className="text-[#00000080]">Test not found.</p>;
-  if (test.createdBy !== user.email) return <p className="text-[#00000080]">You don't have access to manage this test.</p>;
+  if (loading) return <p className="text-[var(--text-muted)]">Loading…</p>;
+  if (!test) return <p className="text-[var(--text-muted)]">Test not found.</p>;
+  if (test.createdBy !== user.email) return <p className="text-[var(--text-muted)]">You don't have access to manage this test.</p>;
 
   return (
     <div>
-      <Link to={`/manage/${testId}`} className="text-sm text-[#00000099] hover:text-[#1F1F1F] mb-4 inline-flex items-center gap-1">
+      <Link to={`/manage/${testId}`} className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] mb-4 inline-flex items-center gap-1">
         <i className="fa-solid fa-chevron-left"></i> {test.displayName}
       </Link>
 
       <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-        <h1 className="text-2xl font-medium text-[#1F1F1F]">Edit Questions</h1>
+        <h1 className="text-2xl font-medium text-[var(--text)]">Edit Questions</h1>
         <div className="flex items-center gap-3">
           {invalidCount > 0 && <span className="text-sm text-red-500 font-medium">{invalidCount} row(s) need fixing</span>}
-          {saved && <span className="text-sm text-[#1E7E34] font-medium">Saved</span>}
+          {saved && <span className="text-sm text-[var(--success)] font-medium">Saved</span>}
           <button onClick={handleDownloadCsv} disabled={rows.length === 0} className="gpill gpill-neutral disabled:opacity-50 disabled:cursor-not-allowed">
             <i className="fa-solid fa-download"></i> CSV
           </button>
@@ -102,7 +102,7 @@ export default function QuestionsEditor() {
         </div>
       </div>
 
-      <p className="text-xs text-[#00000099] mb-4">
+      <p className="text-xs text-[var(--text-muted)] mb-4">
         Separate options with a pipe (<code>|</code>). The answer must match one of the options exactly.
       </p>
 

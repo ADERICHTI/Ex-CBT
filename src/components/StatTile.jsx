@@ -1,9 +1,9 @@
 export default function StatTile({ icon, label, value, tone = 'blue' }) {
   const tones = {
     blue: 'bg-brand-soft text-brand',
-    green: 'bg-[#E6F4EA] text-[#1E7E34]',
+    green: 'bg-[var(--success-soft)] text-[var(--success)]',
     amber: 'bg-amber-50 text-amber-600',
-    slate: 'bg-[#00000008] text-[#00000099]',
+    slate: 'bg-[var(--fill)] text-[var(--text-muted)]',
   };
 
   return (
@@ -12,8 +12,8 @@ export default function StatTile({ icon, label, value, tone = 'blue' }) {
         <i className={icon}></i>
       </div>
       <div className="min-w-0">
-        <div className="text-2xl font-bold text-[#1F1F1F] leading-tight">{value}</div>
-        <div className="text-sm text-[#00000099] truncate">{label}</div>
+        <div className="text-2xl font-bold text-[var(--text)] leading-tight">{value}</div>
+        <div className="text-sm text-[var(--text-muted)] truncate">{label}</div>
       </div>
     </div>
   );

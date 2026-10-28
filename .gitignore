@@ -23,3 +23,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local config (see .env.example, functions/.env.example)
+.env
+.env.*
+!.env.example
+functions/.env
+!.env.emulators
