@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import './index.css'
 import './lib/ui.css'
 import AuthProvider from './features/auth/AuthProvider.jsx'
@@ -11,6 +11,7 @@ import StartTest from './features/take/StartTest.jsx'
 import TestInterface from './features/take/TestInterface.jsx'
 import Submission from './features/take/Submission.jsx'
 import AppShell from './lib/AppShell.jsx'
+import WalletProvider from './features/credits/WalletProvider.jsx'
 import DashboardPage from './features/dashboard/DashboardPage.jsx'
 import TestLayout from './features/test/TestLayout.jsx'
 import QuestionsTab from './features/test/QuestionsTab.jsx'
@@ -38,15 +39,25 @@ createRoot(document.getElementById('root')).render(
           {/* Making and managing tests - any signed-in user, scoped to
               the tests they own. */}
           <Route element={<RequireSignIn />}>
-            <Route element={<AppShell search />}>
-              <Route index element={<DashboardPage />} />
-            </Route>
-            <Route path="/tests/:testId" element={<TestLayout />}>
-              <Route index element={<Navigate to="questions" replace />} />
-              <Route path="questions" element={<QuestionsTab />} />
-              <Route path="candidates" element={<CandidatesTab />} />
-              <Route path="results" element={<ResultsTab />} />
-              <Route path="settings" element={<SettingsTab />} />
+            {/* Test makers have an AI credit wallet (the balance streams in;
+                candidates never load one). */}
+            <Route
+              element={
+                <WalletProvider>
+                  <Outlet />
+                </WalletProvider>
+              }
+            >
+              <Route element={<AppShell search />}>
+                <Route index element={<DashboardPage />} />
+              </Route>
+              <Route path="/tests/:testId" element={<TestLayout />}>
+                <Route index element={<Navigate to="questions" replace />} />
+                <Route path="questions" element={<QuestionsTab />} />
+                <Route path="candidates" element={<CandidatesTab />} />
+                <Route path="results" element={<ResultsTab />} />
+                <Route path="settings" element={<SettingsTab />} />
+              </Route>
             </Route>
           </Route>
 

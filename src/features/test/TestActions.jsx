@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Copy, Download, Link2, MoreVertical, Send, Square, Trash2 } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import MenuButton from '../../lib/MenuButton.jsx'
@@ -31,6 +31,17 @@ export default function TestActions() {
   const [confirm, setConfirm] = useState(null) // 'close' | 'delete'
   const [busy, setBusy] = useState(false)
   const status = test.status ?? 'draft'
+
+  // A one-off note from the page that sent us here (e.g. "Made with AI ·
+  // used 1.3 credits"), shown once and then cleared from history.
+  const location = useLocation()
+  const notice = location.state?.notice
+  useEffect(() => {
+    if (!notice) return
+    showToast(notice)
+    navigate(location.pathname, { replace: true, state: null })
+  }, [notice, showToast, navigate, location.pathname])
+
   const link = `${window.location.origin}/test/${test.id}`
 
   async function publish() {

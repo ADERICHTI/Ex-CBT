@@ -1,0 +1,91 @@
+// Ideas for "Create with AI": a short card title, the prompt it fills in,
+// and the colours and icon of its illustration (IdeaArt.jsx, the same art
+// as PeraForm's). Three show at a time; Shuffle brings the next three.
+export const IDEAS = [
+  {
+    key: 'fractions',
+    title: 'Fractions for Primary 5',
+    prompt: 'A 15-question test on fractions for Primary 5: adding, subtracting, simplifying and comparing fractions, with a few word problems.',
+    art: { sky: '#fff1dc', sky2: '#ffd9b0', ground: '#f4b183', accent: '#e8743b' },
+    icon: 'Calculator',
+  },
+  {
+    key: 'water-cycle',
+    title: 'The water cycle',
+    prompt: 'A 10-question test for JSS 1 on the water cycle: evaporation, condensation, precipitation and collection.',
+    art: { sky: '#e3f2ff', sky2: '#b9ddff', ground: '#7fc0f2', accent: '#2f80d1' },
+    icon: 'Globe2',
+  },
+  {
+    key: 'waec-english',
+    title: 'WAEC-style English',
+    prompt: 'A 20-question English language test in the style of WAEC: synonyms, antonyms, sentence completion, and choosing the correctly spelt word.',
+    art: { sky: '#eef0ff', sky2: '#d3d8ff', ground: '#a3acf5', accent: '#4f46e5' },
+    icon: 'Languages',
+  },
+  {
+    key: 'chemistry-bonding',
+    title: 'Chemical bonding (SS 2)',
+    prompt: 'A 15-question SS 2 chemistry test on chemical bonding: ionic, covalent and metallic bonds, with mostly medium and some hard questions.',
+    art: { sky: '#eaf7e4', sky2: '#c8ecb8', ground: '#8fcf72', accent: '#3e9b3a' },
+    icon: 'FlaskConical',
+  },
+  {
+    key: 'physics-motion',
+    title: 'Motion and forces',
+    prompt: 'A 12-question physics test on motion and Newton’s laws: speed, velocity, acceleration and simple calculations.',
+    art: { sky: '#fdeef4', sky2: '#f9cfe0', ground: '#ef9ab9', accent: '#d6336c' },
+    icon: 'Atom',
+  },
+  {
+    key: 'civic',
+    title: 'Civic education basics',
+    prompt: 'A 10-question civic education test for JSS 3 on citizenship, rights and duties, and the arms of government.',
+    art: { sky: '#f3f0ff', sky2: '#ded5ff', ground: '#b9a7f5', accent: '#7048e8' },
+    icon: 'Landmark',
+  },
+  {
+    key: 'jamb-biology',
+    title: 'JAMB-style biology mock',
+    prompt: 'A 25-question biology mock exam in the style of JAMB UTME: cells, genetics, ecology and the human body, with a hard mix.',
+    art: { sky: '#e6fcf5', sky2: '#c3fae8', ground: '#63e6be', accent: '#0ca678' },
+    icon: 'GraduationCap',
+  },
+  {
+    key: 'staff-safety',
+    title: 'Fire safety for staff',
+    prompt: 'A 10-question workplace fire-safety check for new staff: raising the alarm, extinguisher types, evacuation and assembly points.',
+    art: { sky: '#fff4e6', sky2: '#ffe0b8', ground: '#ffb469', accent: '#e8590c' },
+    icon: 'ShieldCheck',
+  },
+  {
+    key: 'customer-service',
+    title: 'Customer service training',
+    prompt: 'A 12-question test after a customer service training: greeting customers, handling complaints, refunds policy and staying calm.',
+    art: { sky: '#e7f5ff', sky2: '#c5e6ff', ground: '#74c0fc', accent: '#1c7ed6' },
+    icon: 'Briefcase',
+  },
+  {
+    key: 'notes',
+    title: 'From my lesson notes',
+    // Switches the prompt bar to "paste notes" instead of filling it in.
+    mode: 'notes',
+    prompt: '',
+    art: { sky: '#f8f9fa', sky2: '#e9ecef', ground: '#ced4da', accent: '#495057' },
+    icon: 'BookOpen',
+  },
+  {
+    key: 'geography',
+    title: 'Map reading',
+    prompt: 'A 10-question geography test on map reading: scale, direction, grid references and contour lines.',
+    art: { sky: '#fff9db', sky2: '#fff3bf', ground: '#ffd43b', accent: '#e67700' },
+    icon: 'Globe2',
+  },
+  {
+    key: 'aptitude',
+    title: 'Aptitude test for interns',
+    prompt: 'A 20-question aptitude test for intern applicants: number patterns, percentages, verbal analogies and simple logic.',
+    art: { sky: '#f1f3f5', sky2: '#dee2e6', ground: '#adb5bd', accent: '#343a40' },
+    icon: 'ClipboardList',
+  },
+]

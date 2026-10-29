@@ -1,12 +1,23 @@
 import { useRef, useState } from 'react'
-import { ArrowDown, ArrowUp, CircleCheck, Copy, Lock, Plus, Trash2, Upload, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronDown, CircleCheck, Copy, Lock, MessageSquareText, Plus, Sparkles, Trash2, Upload, X } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
+import MenuButton from '../../lib/MenuButton.jsx'
 import { useToast } from '../../lib/useToast.jsx'
 import { parseQuestionsFile } from '../../services/csv.js'
-import { newQuestionId } from '../../services/firestore.js'
+import { DIFFICULTIES, newQuestionId } from '../../services/firestore.js'
+import ReviewDialog from '../ai/ReviewDialog.jsx'
 import { useTestEditor } from './testContext.js'
 
-const blankQuestion = () => ({ id: newQuestionId(), question: '', options: ['', '', '', ''], correct: null })
+const blankQuestion = () => ({
+  id: newQuestionId(),
+  question: '',
+  options: ['', '', '', ''],
+  correct: null,
+  explanation: '',
+  difficulty: '',
+})
+
+const DIFFICULTY_LABELS = { '': 'No difficulty', easy: 'Easy', medium: 'Medium', hard: 'Hard' }
 
 // Questions tab: one card per question - its text, the answer options, and
 // which option is correct (the radio). Saved automatically.
@@ -14,6 +25,9 @@ export default function QuestionsTab() {
   const { test, draft, edit } = useTestEditor()
   const [toast, showToast] = useToast()
   const [pending, setPending] = useState(null) // { kind: 'question' | 'option', index, option? }
+  const [reviewing, setReviewing] = useState(false)
+  // Questions whose explanation box was opened (ones with text always show it).
+  const [explaining, setExplaining] = useState(() => new Set())
   const fileRef = useRef(null)
   // Answers are matched to questions by position, so changing questions
   // while candidates are sitting the test would mark them wrongly.
@@ -128,6 +142,11 @@ export default function QuestionsTab() {
             <span className="questions-warn"> · {unmarked} without a correct answer</span>
           )}
         </p>
+        {!locked && questions.length > 0 && (
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => setReviewing(true)}>
+            <Sparkles size={15} /> Review with AI
+          </button>
+        )}
       </div>
 
       {questions.length === 0 && (
@@ -209,9 +228,50 @@ export default function QuestionsTab() {
               )}
             </div>
 
+            {(q.explanation || explaining.has(q.id)) && (
+              <label className="q-explain">
+                <span>Explanation (only you see this)</span>
+                <textarea
+                  value={q.explanation ?? ''}
+                  rows={2}
+                  onChange={(e) => {
+                    const explanation = e.target.value
+                    setQuestion(index, (x) => ({ ...x, explanation }))
+                  }}
+                  placeholder="Why the answer is right - handy when you go over the test with candidates"
+                />
+              </label>
+            )}
+
             <div className="q-foot">
+              <MenuButton
+                className={`q-difficulty q-difficulty-${q.difficulty || 'none'}`}
+                align="left"
+                icon={
+                  <>
+                    {DIFFICULTY_LABELS[q.difficulty ?? '']} <ChevronDown size={13} />
+                  </>
+                }
+                label={`Difficulty: ${DIFFICULTY_LABELS[q.difficulty ?? '']}`}
+                items={['', ...DIFFICULTIES].map((d) => ({
+                  label: DIFFICULTY_LABELS[d],
+                  checked: (q.difficulty ?? '') === d,
+                  onSelect: () => setQuestion(index, (x) => ({ ...x, difficulty: d })),
+                }))}
+              />
               {q.correct == null && <span className="q-hint">Click a letter to mark the correct answer</span>}
               <span className="q-tools">
+                {!q.explanation && !explaining.has(q.id) && (
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    onClick={() => setExplaining((prev) => new Set(prev).add(q.id))}
+                    aria-label="Add an explanation"
+                    title="Add an explanation"
+                  >
+                    <MessageSquareText size={16} />
+                  </button>
+                )}
                 <button
                   type="button"
                   className="icon-btn"
@@ -261,6 +321,8 @@ export default function QuestionsTab() {
           <input ref={fileRef} type="file" accept=".csv,.json,text/csv,application/json" hidden onChange={importMore} />
         </div>
       )}
+
+      <ReviewDialog open={reviewing} onClose={() => setReviewing(false)} />
 
       <ConfirmModal
         open={Boolean(pending)}

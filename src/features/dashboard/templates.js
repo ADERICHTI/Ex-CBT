@@ -264,4 +264,4 @@ export const TEMPLATES = [
 export const TEMPLATE_BY_KEY = Object.fromEntries(TEMPLATES.map((t) => [t.key, t]))
 
 // Shown in the dashboard's start row (the rest are in the gallery).
-export const START_ROW_KEYS = ['quick-quiz', 'mid-term', 'staff-training']
+export const START_ROW_KEYS = ['quick-quiz', 'mid-term']

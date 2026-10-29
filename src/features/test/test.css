@@ -140,6 +140,13 @@
   margin-top: 2px;
 }
 
+.questions-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .questions-count {
   margin: 0;
   color: var(--text-muted);
@@ -300,6 +307,61 @@
   gap: 4px;
   align-self: flex-start;
   margin-left: 40px;
+}
+
+.q-explain {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 40px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.q-explain textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  resize: vertical;
+}
+
+.q-explain textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Difficulty chip (a MenuButton whose "icon" is the label). */
+.q-difficulty > .icon-btn {
+  width: auto;
+  height: 28px;
+  gap: 4px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  background: var(--fill);
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+}
+
+.q-difficulty-easy > .icon-btn {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.q-difficulty-medium > .icon-btn {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.q-difficulty-hard > .icon-btn {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .q-foot {

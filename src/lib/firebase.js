@@ -2,7 +2,7 @@ import { initializeApp } from 'firebase/app'
 import { ReCaptchaEnterpriseProvider, initializeAppCheck } from 'firebase/app-check'
 import { connectAuthEmulator, getAuth, GoogleAuthProvider } from 'firebase/auth'
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore'
-import { connectFunctionsEmulator, getFunctions } from 'firebase/functions'
+import { connectFunctionsEmulator, getFunctions, httpsCallable } from 'firebase/functions'
 
 // Values come from Vite's VITE_-prefixed env vars - see .env.example.
 // HyperCBT lives in the "Quality Tools" Firebase project (quality-toolsx),
@@ -50,6 +50,17 @@ if (useEmulators) connectFirestoreEmulator(db, '127.0.0.1', port(8080))
 // Same region as the database and the functions (functions/index.js).
 export const functions = getFunctions(firebaseApp, 'europe-west1')
 if (useEmulators) connectFunctionsEmulator(functions, '127.0.0.1', port(5001))
+
+// The suite-wide billing database: one AI credit wallet per Quality Tools
+// account, whichever app spends it. Read-only here; functions write it.
+export const billingDb = getFirestore(firebaseApp, 'billing')
+if (useEmulators) connectFirestoreEmulator(billingDb, '127.0.0.1', port(8080))
+
+// The suite's shared AI endpoint and wallet set-up (they live in PeraForm's
+// functions; HyperCBT's features are added there - functions/ai/hypercbt.js).
+// AI runs stream progress and can take a while (the function allows 300 s).
+export const callAiRun = httpsCallable(functions, 'aiRun', { timeout: 305_000 })
+export const callEnsureWallet = httpsCallable(functions, 'ensureWallet')
 
 export const googleProvider = new GoogleAuthProvider()
 

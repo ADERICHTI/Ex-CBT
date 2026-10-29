@@ -35,11 +35,11 @@ export default function TestEditorProvider({ testId, children }) {
           if (started.current) return
           started.current = true
           try {
-            const answers = await getAnswerKey(testId)
+            const key = await getAnswerKey(testId)
             const initial = {
               displayName: data.displayName ?? '',
               minutes: data.minutes ?? 15,
-              questions: joinQuestions(data.questions, answers),
+              questions: joinQuestions(data.questions, key),
             }
             draftRef.current = initial
             setDraft(initial)

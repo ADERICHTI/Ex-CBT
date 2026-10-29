@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
-import { ArrowDownAZ, ChevronRight, Filter, Folder, FolderPlus, LayoutGrid, List, MoreVertical, Plus, Star, Upload } from 'lucide-react'
+import { ArrowDownAZ, ChevronRight, Filter, Folder, FolderPlus, LayoutGrid, List, MoreVertical, Plus, Sparkles, Star, Upload } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import MenuButton from '../../lib/MenuButton.jsx'
 import { createFolder, deleteFolder, moveToFolder, renameFolder, setStarred, useOrganize } from '../../lib/organize.js'
 import PromptDialog from '../../lib/PromptDialog.jsx'
 import { useToast } from '../../lib/useToast.jsx'
 import { createTest, deleteTest, STATUS_LABELS } from '../../services/firestore.js'
+import CreateTestDialog from '../ai/CreateTestDialog.jsx'
 import { useAuth } from '../auth/useAuth.js'
 import ImportDialog from './ImportDialog.jsx'
 import MoveDialog from './MoveDialog.jsx'
@@ -60,6 +61,7 @@ export default function DashboardPage() {
   const [creating, setCreating] = useState(false)
   const [importing, setImporting] = useState(false)
   const [galleryOpen, setGalleryOpen] = useState(false)
+  const [aiOpen, setAiOpen] = useState(false)
   const [actionError, setActionError] = useState('')
   const [toast, showToast] = useToast()
   const [pendingDelete, setPendingDelete] = useState(null)
@@ -144,6 +146,12 @@ export default function DashboardPage() {
         </button>
       </div>
       <section className="dash-start" aria-label="Start a new test">
+        <button type="button" className="start-card start-card-ai" onClick={() => setAiOpen(true)} disabled={creating}>
+          <span className="start-visual start-visual-icon start-visual-ai">
+            <Sparkles size={32} strokeWidth={1.5} />
+          </span>
+          <span className="start-label">Create with AI</span>
+        </button>
         <button
           type="button"
           className="start-card"
@@ -176,6 +184,8 @@ export default function DashboardPage() {
           <span className="start-label">Import questions</span>
         </button>
       </section>
+
+      <CreateTestDialog open={aiOpen} onClose={() => setAiOpen(false)} />
 
       <TemplateGallery
         open={galleryOpen}

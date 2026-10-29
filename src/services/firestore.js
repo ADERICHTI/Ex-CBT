@@ -19,8 +19,9 @@ import { db, functions } from '../lib/firebase.js'
 //   { displayName, minutes, status: 'draft'|'open'|'closed', strictMode,
 //     restrictAccess, questions: [{ id, question, options[] }],
 //     createdBy, createdAt, updatedAt, updatedBy, submissionCount }
-// tests/{testId}/answerKey/data   owner-only: { answers[] } (option text,
-//                                 index-aligned with questions)
+// tests/{testId}/answerKey/data   owner-only: { answers[] } (option text),
+//                                 explanations[] and difficulty[] - all
+//                                 index-aligned with questions
 // tests/{testId}/roster/data      owner-only: { allowedUsers[{ name, studentId }] }
 // tests/{testId}/submissions/{id} one per candidate (written by functions)
 // users/{email}                   profile + testsTaken (functions only)
@@ -55,21 +56,36 @@ const testRef = (testId) => doc(db, 'tests', testId)
 const answerKeyRef = (testId) => doc(db, 'tests', testId, 'answerKey', 'data')
 const rosterRef = (testId) => doc(db, 'tests', testId, 'roster', 'data')
 
-// Editor questions ({ id, question, options[], correct: index|null }) split
-// into what candidates may read and the owner-only answer key.
+export const DIFFICULTIES = ['easy', 'medium', 'hard']
+
+// Editor questions ({ id, question, options[], correct: index|null,
+// explanation?, difficulty? }) split into what candidates may read and the
+// owner-only answer key (answers, explanations, difficulty).
 export function splitQuestions(questions) {
   return {
     publicQuestions: questions.map(({ id, question, options }) => ({ id, question, options })),
-    answers: questions.map((q) => (q.correct != null ? (q.options[q.correct] ?? '') : '')),
+    key: {
+      answers: questions.map((q) => (q.correct != null ? (q.options[q.correct] ?? '') : '')),
+      explanations: questions.map((q) => q.explanation ?? ''),
+      difficulty: questions.map((q) => (DIFFICULTIES.includes(q.difficulty) ? q.difficulty : '')),
+    },
   }
 }
 
 // The reverse: public questions + answer key → editor questions.
-export function joinQuestions(questions = [], answers = []) {
+export function joinQuestions(questions = [], key = {}) {
+  const { answers = [], explanations = [], difficulty = [] } = key
   return questions.map((q, i) => {
     const answer = String(answers[i] ?? '').trim().toLowerCase()
     const correct = answer ? q.options.findIndex((o) => o.trim().toLowerCase() === answer) : -1
-    return { id: q.id || newQuestionId(), question: q.question, options: [...q.options], correct: correct >= 0 ? correct : null }
+    return {
+      id: q.id || newQuestionId(),
+      question: q.question,
+      options: [...q.options],
+      correct: correct >= 0 ? correct : null,
+      explanation: explanations[i] ?? '',
+      difficulty: DIFFICULTIES.includes(difficulty[i]) ? difficulty[i] : '',
+    }
   })
 }
 
@@ -121,9 +137,10 @@ export function watchTest(testId, onChange, onError) {
   )
 }
 
+// { answers, explanations, difficulty } (owner only).
 export async function getAnswerKey(testId) {
   const snap = await getDoc(answerKeyRef(testId))
-  return snap.exists() ? (snap.data().answers ?? []) : []
+  return snap.exists() ? snap.data() : {}
 }
 
 export async function getRoster(testId) {
@@ -135,7 +152,7 @@ export async function getRoster(testId) {
 // questions. Returns its id: a readable slug of the title + a random suffix.
 export async function createTest(email, { displayName = '', minutes = 15, questions = [], strictMode = false } = {}) {
   const testId = `${slugify(displayName || 'untitled-test')}-${randomSuffix()}`
-  const { publicQuestions, answers } = splitQuestions(questions)
+  const { publicQuestions, key } = splitQuestions(questions)
   const batch = writeBatch(db)
   batch.set(testRef(testId), {
     displayName,
@@ -152,7 +169,7 @@ export async function createTest(email, { displayName = '', minutes = 15, questi
     lastSubmissionAt: null,
   })
   // createdBy on the subdocs lets the rules check ownership in this same batch.
-  batch.set(answerKeyRef(testId), { answers, createdBy: email })
+  batch.set(answerKeyRef(testId), { ...key, createdBy: email })
   batch.set(rosterRef(testId), { allowedUsers: [], createdBy: email })
   await batch.commit()
   return testId
@@ -161,7 +178,7 @@ export async function createTest(email, { displayName = '', minutes = 15, questi
 // Saves the editor's draft: test fields, and the answer key with them so
 // the two never drift out of line.
 export async function saveTestDraft(testId, email, { displayName, minutes, questions }) {
-  const { publicQuestions, answers } = splitQuestions(questions)
+  const { publicQuestions, key } = splitQuestions(questions)
   const batch = writeBatch(db)
   batch.update(testRef(testId), {
     displayName,
@@ -170,7 +187,7 @@ export async function saveTestDraft(testId, email, { displayName, minutes, quest
     updatedBy: email,
     updatedAt: serverTimestamp(),
   })
-  batch.set(answerKeyRef(testId), { answers, createdBy: email })
+  batch.set(answerKeyRef(testId), { ...key, createdBy: email })
   await batch.commit()
 }
 
