@@ -9,7 +9,7 @@ const db = getFirestore('hypercbt')
 
 const OWNER = 'owner@example.com'
 const STUDENT = 'student@example.com'
-const req = (email, data) => ({ auth: email ? { uid: email, token: { email } } : undefined, data })
+const req = (email, data, verified = true) => ({ auth: email ? { uid: email, token: { email, email_verified: verified } } : undefined, data })
 
 let passed = 0
 let failed = 0
@@ -77,6 +77,13 @@ await check('submission count went up', async () => equal((await testRef.get()).
 await testRef.update({ status: 'closed' })
 await check('startTest refuses a closed test', () =>
   expectError(fns.startTest.run(req('x@example.com', { testId: id, name: 'Ada Lovelace', studentId: 'S-1' })), 'not-found'),
+)
+await check('startTest records whether the email was verified', async () => {
+  const sub = (await db.doc(`tests/${id}/submissions/s-1`).get()).data()
+  equal(sub.emailVerified, true)
+})
+await check('owner signed in unverified can’t delete the test', () =>
+  expectError(fns.deleteTest.run(req(OWNER, { testId: id }, false)), 'failed-precondition'),
 )
 await check('only the owner can delete the test', () =>
   expectError(fns.deleteTest.run(req(STUDENT, { testId: id })), 'permission-denied'),

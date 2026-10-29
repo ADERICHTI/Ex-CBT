@@ -11,6 +11,15 @@ service cloud.firestore {
       return isSignedIn() && request.auth.token.email == email;
     }
 
+    // Test makers need a verified email (decided 2026-10-29, same rule as
+    // PeraForm): ownership is by email, so an unverified password account
+    // mustn't be able to act as an address it hasn't proven. Google and
+    // email-link sign-ins are verified already. Candidates sitting a test
+    // don't need it.
+    function isMaker() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
     // Ownership replaces the old fixed admin allowlist: whoever created a
     // test is the only one who can manage it. createdBy is set once at
     // creation (see createTest in src/services/firestore.js) and never
@@ -19,7 +28,7 @@ service cloud.firestore {
     // rule, where a get() per candidate document isn't how Firestore proves
     // a query is safe to run (see the testOwnerEmail comment below).
     function isTestOwner(testId) {
-      return isSignedIn() &&
+      return isMaker() &&
         get(/databases/$(database)/documents/tests/$(testId)).data.createdBy == request.auth.token.email;
     }
 
@@ -34,16 +43,16 @@ service cloud.firestore {
     // works both for createTest()'s batch (parent created alongside) and for
     // later standalone writes. Used to gate the owner-only subdocs' writes.
     function willOwnTest(testId) {
-      return isSignedIn() &&
+      return isMaker() &&
         getAfter(/databases/$(database)/documents/tests/$(testId)).data.createdBy == request.auth.token.email;
     }
 
     match /tests/{testId} {
       allow get: if isSignedIn();
-      allow list: if isSignedIn() && resource.data.createdBy == request.auth.token.email;
+      allow list: if isMaker() && resource.data.createdBy == request.auth.token.email;
       // The roster must never sit on this publicly-readable doc - it lives in
       // the owner-only roster subcollection below.
-      allow create: if isSignedIn() &&
+      allow create: if isMaker() &&
         request.resource.data.createdBy == request.auth.token.email &&
         request.resource.data.status == 'draft' &&
         !('allowedUsers' in request.resource.data);
@@ -88,9 +97,10 @@ service cloud.firestore {
       // condition on a plain field - a get() inside the rule can't be
       // matched to a query filter that way.
       match /submissions/{submissionId} {
+        // A candidate reads their own; the test's (verified) owner reads all.
         allow read: if isSignedIn() &&
           (resource.data.userEmail == request.auth.token.email ||
-           resource.data.testOwnerEmail == request.auth.token.email);
+           (isMaker() && resource.data.testOwnerEmail == request.auth.token.email));
 
         // Starting an attempt (roster check + dedupe), finalizing it
         // (grading), and deleting it all go through Cloud Functions
@@ -108,7 +118,7 @@ service cloud.firestore {
     // rules for those. Same testOwnerEmail field, same reasoning as above:
     // listRecentSubmissions() always adds a matching where('testOwnerEmail', ...).
     match /{path=**}/submissions/{submissionId} {
-      allow read: if isSignedIn() && resource.data.testOwnerEmail == request.auth.token.email;
+      allow read: if isMaker() && resource.data.testOwnerEmail == request.auth.token.email;
     }
 
     // users/{email} - doc id is the signed-in user's email, per spec.
@@ -125,14 +135,14 @@ service cloud.firestore {
       // This person's own stars and folders for their tests (lib/organize.js):
       //   users/{email}/testMeta/{testId}, users/{email}/folders/{folderId}
       match /testMeta/{testId} {
-        allow read, write: if isOwnUserDoc(email);
+        allow read, write: if isOwnUserDoc(email) && isMaker();
       }
       match /folders/{folderId} {
-        allow read, write: if isOwnUserDoc(email);
+        allow read, write: if isOwnUserDoc(email) && isMaker();
       }
       // Recently used templates, synced across devices (dashboard).
       match /settings/{settingId} {
-        allow read, write: if isOwnUserDoc(email);
+        allow read, write: if isOwnUserDoc(email) && isMaker();
       }
     }
   }

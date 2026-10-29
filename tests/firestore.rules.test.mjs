@@ -3,7 +3,7 @@
 // (or, with an emulator already running: FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 node tests/firestore.rules.test.mjs)
 import { readFileSync } from 'node:fs'
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing'
-import { deleteDoc, doc, getDoc, setDoc, updateDoc, writeBatch } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where, writeBatch } from 'firebase/firestore'
 
 const [host, port] = (process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080').split(':')
 const env = await initializeTestEnvironment({
@@ -13,9 +13,14 @@ const env = await initializeTestEnvironment({
 
 const OWNER = 'owner@example.com'
 const STUDENT = 'student@example.com'
-const as = (email) => env.authenticatedContext(email, { email }).firestore()
+// Makers sign in verified; the candidate deliberately isn't (candidates
+// don't need a verified email). `unverified` is a maker who never clicked
+// the verification link.
+const as = (email, verified = true) => env.authenticatedContext(email, { email, email_verified: verified }).firestore()
 const owner = as(OWNER)
-const student = as(STUDENT)
+const student = as(STUDENT, false)
+const unverified = as('unverified@example.com', false)
+const unverifiedOwner = as(OWNER, false)
 const anon = env.unauthenticatedContext().firestore()
 const seed = (fn) => env.withSecurityRulesDisabled((ctx) => fn(ctx.firestore()))
 
@@ -41,6 +46,13 @@ await check('owner creates test + answer key + list in one batch', assertSucceed
 await check('a new test must be a draft', assertFails(setDoc(doc(owner, 'tests/t2'), { createdBy: OWNER, status: 'open' })))
 await check('no approved list on the public test doc', assertFails(setDoc(doc(owner, 'tests/t2'), { createdBy: OWNER, status: 'draft', allowedUsers: [] })))
 await check('can’t create a test in someone else’s name', assertFails(setDoc(doc(student, 'tests/t2'), { createdBy: OWNER, status: 'draft' })))
+
+// ── Verified email for makers ──
+await check('unverified account can’t create a test', assertFails(setDoc(doc(unverified, 'tests/u1'), { createdBy: 'unverified@example.com', status: 'draft' })))
+await check('unverified account can’t list its tests', assertFails(getDocs(query(collection(unverified, 'tests'), where('createdBy', '==', 'unverified@example.com')))))
+await check('owner signed in unverified can’t read the answer key', assertFails(getDoc(doc(unverifiedOwner, 'tests/t1/answerKey/data'))))
+await check('owner signed in unverified can’t edit the test', assertFails(updateDoc(doc(unverifiedOwner, 'tests/t1'), { displayName: 'x' })))
+await check('verified owner lists own tests', assertSucceeds(getDocs(query(collection(owner, 'tests'), where('createdBy', '==', OWNER)))))
 
 // ── Reading ──
 await check('signed-in candidate can read the test', assertSucceeds(getDoc(doc(student, 'tests/t1'))))
@@ -72,6 +84,7 @@ await seed((db) => setDoc(doc(db, 'tests/t1/submissions/1'), { userEmail: STUDEN
 await check('candidate can’t write a submission', assertFails(setDoc(doc(student, 'tests/t1/submissions/2'), { userEmail: STUDENT })))
 await check('candidate reads own submission', assertSucceeds(getDoc(doc(student, 'tests/t1/submissions/1'))))
 await check('owner reads submissions', assertSucceeds(getDoc(doc(owner, 'tests/t1/submissions/1'))))
+await check('owner signed in unverified can’t read submissions', assertFails(getDoc(doc(unverifiedOwner, 'tests/t1/submissions/1'))))
 await check('others can’t read a submission', assertFails(getDoc(doc(as('other@example.com'), 'tests/t1/submissions/1'))))
 await check('owner can’t delete a submission directly', assertFails(deleteDoc(doc(owner, 'tests/t1/submissions/1'))))
 
@@ -84,6 +97,8 @@ await check('can’t read someone else’s profile', assertFails(getDoc(doc(stud
 await check('own star', assertSucceeds(setDoc(doc(owner, `users/${OWNER}/testMeta/t1`), { starred: true })))
 await check('own folder', assertSucceeds(setDoc(doc(owner, `users/${OWNER}/folders/f1`), { name: 'Maths' })))
 await check('can’t read someone else’s stars', assertFails(getDoc(doc(student, `users/${OWNER}/testMeta/t1`))))
+await check('unverified account can’t keep stars', assertFails(setDoc(doc(unverified, 'users/unverified@example.com/testMeta/x'), { starred: true })))
+await check('unverified candidate can still update their profile', assertSucceeds(setDoc(doc(unverified, 'users/unverified@example.com'), { email: 'unverified@example.com' }, { merge: true })))
 await check('can’t write someone else’s folders', assertFails(setDoc(doc(student, `users/${OWNER}/folders/f2`), { name: 'x' })))
 
 await check('own recent templates', assertSucceeds(setDoc(doc(owner, `users/${OWNER}/settings/templates`), { recentKeys: ['quick-quiz'] })))

@@ -27,6 +27,19 @@ export async function createAccount(name, email, password) {
   return user
 }
 
+export function resendVerification() {
+  return sendEmailVerification(getFirebaseAuth().currentUser)
+}
+
+// After clicking the link in another tab: refresh the account and its
+// token, so the new "verified" status reaches the database rules.
+export async function recheckVerification() {
+  const user = getFirebaseAuth().currentUser
+  await user?.reload()
+  await user?.getIdToken(true)
+  return Boolean(getFirebaseAuth().currentUser?.emailVerified)
+}
+
 export function resetPassword(email) {
   return sendPasswordResetEmail(getFirebaseAuth(), email)
 }

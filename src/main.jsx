@@ -5,6 +5,7 @@ import './index.css'
 import './lib/ui.css'
 import AuthProvider from './features/auth/AuthProvider.jsx'
 import RequireSignIn from './features/auth/RequireSignIn.jsx'
+import RequireVerified from './features/auth/RequireVerified.jsx'
 import SignInPage from './features/auth/SignInPage.jsx'
 import TakeLayout from './features/take/TakeLayout.jsx'
 import StartTest from './features/take/StartTest.jsx'
@@ -48,6 +49,7 @@ createRoot(document.getElementById('root')).render(
                 </WalletProvider>
               }
             >
+              <Route element={<RequireVerified />}>
               <Route element={<AppShell search />}>
                 <Route index element={<DashboardPage />} />
               </Route>
@@ -57,6 +59,7 @@ createRoot(document.getElementById('root')).render(
                 <Route path="candidates" element={<CandidatesTab />} />
                 <Route path="results" element={<ResultsTab />} />
                 <Route path="settings" element={<SettingsTab />} />
+              </Route>
               </Route>
             </Route>
           </Route>

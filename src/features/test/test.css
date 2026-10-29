@@ -924,3 +924,14 @@
   flex-shrink: 0;
   white-space: nowrap;
 }
+
+.unverified-tag {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}

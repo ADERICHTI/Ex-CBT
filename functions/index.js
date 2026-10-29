@@ -24,6 +24,14 @@ function requireApp(request) {
   }
 }
 
+// Test makers need a verified email (same rule as firestore.rules →
+// isMaker): ownership is by email. Candidates don't.
+function requireVerifiedMaker(request) {
+  if (request.auth?.token?.email_verified !== true) {
+    throw new HttpsError('failed-precondition', 'Verify your email to manage tests.');
+  }
+}
+
 // Every callable starts with the App Check check.
 function onCall(handler) {
   return onCallBase((request) => {
@@ -108,6 +116,9 @@ export const startTest = onCall(async (request) => {
     studentId: studentId.trim(),
     name: name.trim(),
     userEmail: email,
+    // Shown to the teacher as "email not verified" when false: the email is
+    // the candidate's sign-in, not proof of who they are.
+    emailVerified: request.auth.token.email_verified === true,
     startedAt: FieldValue.serverTimestamp(),
     testTaken: false,
     submittedAt: null,
@@ -161,6 +172,8 @@ export const deleteSubmission = onCall(async (request) => {
   const email = request.auth?.token?.email;
   if (!email) throw new HttpsError('unauthenticated', 'Sign in required.');
 
+  requireVerifiedMaker(request);
+
   const { testId, attemptId } = request.data ?? {};
   if (!testId || !attemptId) {
     throw new HttpsError('invalid-argument', 'testId and attemptId are required.');
@@ -196,6 +209,8 @@ export const deleteSubmission = onCall(async (request) => {
 export const deleteTest = onCall(async (request) => {
   const email = request.auth?.token?.email;
   if (!email) throw new HttpsError('unauthenticated', 'Sign in required.');
+
+  requireVerifiedMaker(request);
 
   const { testId } = request.data ?? {};
   if (!testId) throw new HttpsError('invalid-argument', 'testId is required.');

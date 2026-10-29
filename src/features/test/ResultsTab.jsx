@@ -80,6 +80,8 @@ export default function ResultsTab() {
       name: s.name,
       studentId: s.studentId,
       email: s.userEmail,
+      // false = signed in with an email nobody proved; blank for older results.
+      emailVerified: s.emailVerified ?? '',
       score: s.score ?? 0,
       outOf: total,
       percent: pct(s.score ?? 0, total),
@@ -177,7 +179,14 @@ export default function ResultsTab() {
               <div key={s.id} className="grid-row" role="row">
                 <span role="cell" className="results-who">
                   <strong>{s.name}</strong>
-                  <small>{s.userEmail}</small>
+                  <small>
+                    {s.userEmail}
+                    {s.emailVerified === false && (
+                      <span className="unverified-tag" title="This candidate signed in with an email that hasn’t been verified, so it may not be theirs.">
+                        email not verified
+                      </span>
+                    )}
+                  </small>
                 </span>
                 <span role="cell">{s.studentId}</span>
                 <span role="cell" className="results-score">
