@@ -38,3 +38,11 @@
 .confirm-actions .btn {
   height: 38px;
 }
+
+.notice-list {
+  max-height: 40vh;
+  margin: 0;
+  padding-left: 20px;
+  overflow-y: auto;
+  font-size: 14px;
+}

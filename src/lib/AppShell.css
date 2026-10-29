@@ -200,10 +200,17 @@
   }
 }
 
-/* Narrow phones: the first row must fit. */
+/* Narrow phones: the first row must fit - the logo keeps only its mark
+   when the bar also has a centre row. */
 @media (max-width: 480px) {
   .shell {
     --gutter: 12px;
+  }
+
+  .topbar-has-center .logo {
+    padding: 0 8px;
+    font-size: 0;
+    gap: 0;
   }
 
   .topbar-actions {

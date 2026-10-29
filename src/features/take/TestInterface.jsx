@@ -51,7 +51,8 @@ export default function TestInterface() {
       ]);
       if (cancelled) return;
 
-      if (!foundTest || foundTest.active === false) {
+      // A test closed mid-attempt can still be finished (see the Close dialog).
+      if (!foundTest || foundTest.status === 'draft') {
         goTo('', {}, { replace: true });
         return;
       }

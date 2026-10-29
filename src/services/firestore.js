@@ -1,11 +1,8 @@
 import {
   collection,
-  collectionGroup,
-  deleteDoc,
   doc,
   getDoc,
-  getDocs,
-  limit,
+  onSnapshot,
   orderBy,
   query,
   serverTimestamp,
@@ -13,244 +10,229 @@ import {
   updateDoc,
   where,
   writeBatch,
-} from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
-import { db, functions } from '../lib/firebase.js';
+} from 'firebase/firestore'
+import { httpsCallable } from 'firebase/functions'
+import { db, functions } from '../lib/firebase.js'
 
-// ---------- tests ----------
+// ── Data model ────────────────────────────────────────────────
+// tests/{testId}                  public test: title, time, questions
+//   { displayName, minutes, status: 'draft'|'open'|'closed', strictMode,
+//     restrictAccess, questions: [{ id, question, options[] }],
+//     createdBy, createdAt, updatedAt, updatedBy, submissionCount }
+// tests/{testId}/answerKey/data   owner-only: { answers[] } (option text,
+//                                 index-aligned with questions)
+// tests/{testId}/roster/data      owner-only: { allowedUsers[{ name, studentId }] }
+// tests/{testId}/submissions/{id} one per candidate (written by functions)
+// users/{email}                   profile + testsTaken (functions only)
+// users/{email}/testMeta/{testId} this person's star/folder for a test
+// users/{email}/folders/{id}      this person's folders
+
+export const STATUS_LABELS = { draft: 'Draft', open: 'Open', closed: 'Closed' }
+
+export function newQuestionId() {
+  return Math.random().toString(36).slice(2, 10)
+}
 
 function slugify(input) {
-  return String(input)
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'test';
+  return (
+    String(input)
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 40) || 'test'
+  )
 }
 
-function randomSuffix(length = 8) {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let out = '';
-  for (let i = 0; i < length; i++) {
-    out += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return out;
+function randomSuffix(length = 6) {
+  const chars = 'abcdefghijkmnpqrstuvwxyz23456789'
+  let out = ''
+  for (let i = 0; i < length; i++) out += chars[Math.floor(Math.random() * chars.length)]
+  return out
 }
 
-function answerKeyDoc(testId) {
-  return doc(db, 'tests', testId, 'answerKey', 'data');
-}
+const testRef = (testId) => doc(db, 'tests', testId)
+const answerKeyRef = (testId) => doc(db, 'tests', testId, 'answerKey', 'data')
+const rosterRef = (testId) => doc(db, 'tests', testId, 'roster', 'data')
 
-// The approved name + Student ID list lives in an owner-only subdoc for the
-// same reason the answer key does: the public test doc is readable by anyone
-// with the link, and a readable roster would let a student impersonate a
-// classmate. Only the startTest Cloud Function checks it for test-takers.
-function rosterDoc(testId) {
-  return doc(db, 'tests', testId, 'roster', 'data');
-}
-
-// The public test doc never carries an `answer` field - only the owner-only
-// answerKey subdoc does (see firestore.rules). This is the split point: any
-// write of `questions` here always writes both docs together, in the same
-// batch, so they can never drift out of index-alignment.
-function splitQuestions(questions) {
+// Editor questions ({ id, question, options[], correct: index|null }) split
+// into what candidates may read and the owner-only answer key.
+export function splitQuestions(questions) {
   return {
-    publicQuestions: questions.map(({ question, options }) => ({ question, options })),
-    answers: questions.map((q) => q.answer),
-  };
+    publicQuestions: questions.map(({ id, question, options }) => ({ id, question, options })),
+    answers: questions.map((q) => (q.correct != null ? (q.options[q.correct] ?? '') : '')),
+  }
 }
+
+// The reverse: public questions + answer key → editor questions.
+export function joinQuestions(questions = [], answers = []) {
+  return questions.map((q, i) => {
+    const answer = String(answers[i] ?? '').trim().toLowerCase()
+    const correct = answer ? q.options.findIndex((o) => o.trim().toLowerCase() === answer) : -1
+    return { id: q.id || newQuestionId(), question: q.question, options: [...q.options], correct: correct >= 0 ? correct : null }
+  })
+}
+
+// Problems that stop a test from opening, in plain words ([] = ready).
+export function testProblems(draft) {
+  const problems = []
+  if (!draft.questions.length) problems.push('Add at least one question.')
+  draft.questions.forEach((q, i) => {
+    const n = i + 1
+    const options = q.options.filter((o) => o.trim())
+    if (!q.question.trim()) problems.push(`Question ${n} has no text.`)
+    if (options.length < 2) problems.push(`Question ${n} needs at least 2 answer options.`)
+    if (q.correct == null || !q.options[q.correct]?.trim()) problems.push(`Question ${n} has no correct answer marked.`)
+  })
+  if (!(Number(draft.minutes) > 0)) problems.push('Set a time limit of at least 1 minute.')
+  return problems
+}
+
+// ── Tests ─────────────────────────────────────────────────────
 
 export async function getTest(testId) {
-  if (!testId) return null;
-  const snap = await getDoc(doc(db, 'tests', testId));
-  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+  if (!testId) return null
+  const snap = await getDoc(testRef(testId))
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null
 }
 
-// Owner-only: re-merges the private answerKey back into `questions` so
-// TestDetail/QuestionsEditor can display and edit the full
-// { question, options, answer } shape they already work with.
-export async function getTestAnswerKey(testId) {
-  const snap = await getDoc(answerKeyDoc(testId));
-  return snap.exists() ? snap.data().answers ?? [] : [];
+// Live list of the tests this person owns, newest edit first.
+export function watchMyTests(email, onChange, onError) {
+  const q = query(collection(db, 'tests'), where('createdBy', '==', email), orderBy('updatedAt', 'desc'))
+  return onSnapshot(
+    q,
+    (snap) =>
+      onChange(
+        snap.docs.map((d) => {
+          // 'estimate': a just-written serverTimestamp shows local time, not null.
+          const data = d.data({ serverTimestamps: 'estimate' })
+          return { id: d.id, ...data, updatedAt: data.updatedAt?.toDate() ?? null }
+        }),
+      ),
+    onError,
+  )
 }
 
-// Owner-only (see firestore.rules).
-export async function getTestRoster(testId) {
-  const snap = await getDoc(rosterDoc(testId));
-  return snap.exists() ? snap.data().allowedUsers ?? [] : [];
+export function watchTest(testId, onChange, onError) {
+  return onSnapshot(
+    testRef(testId),
+    (snap) => onChange(snap.exists() ? { id: snap.id, ...snap.data({ serverTimestamps: 'estimate' }) } : null),
+    onError,
+  )
 }
 
-export async function listTests(ownerEmail) {
-  const snap = await getDocs(
-    query(collection(db, 'tests'), where('createdBy', '==', ownerEmail), orderBy('createdAt', 'desc'))
-  );
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+export async function getAnswerKey(testId) {
+  const snap = await getDoc(answerKeyRef(testId))
+  return snap.exists() ? (snap.data().answers ?? []) : []
 }
 
-export async function createTest({ adminEnteredId, displayName, minutes, questions, allowedUsers, restrictAccess, strictMode, createdBy }) {
-  // Collision-checked id: admin-entered id + random suffix, retried on the
-  // (astronomically unlikely) chance of a collision.
-  let testId;
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const candidate = `${slugify(adminEnteredId)}-${randomSuffix()}`;
-    const existing = await getDoc(doc(db, 'tests', candidate));
-    if (!existing.exists()) {
-      testId = candidate;
-      break;
-    }
-  }
-  if (!testId) throw new Error('Could not allocate a unique test id, please try again.');
+export async function getRoster(testId) {
+  const snap = await getDoc(rosterRef(testId))
+  return snap.exists() ? (snap.data().allowedUsers ?? []) : []
+}
 
-  const { publicQuestions, answers } = splitQuestions(questions);
-
-  const batch = writeBatch(db);
-  batch.set(doc(db, 'tests', testId), {
-    adminEnteredId,
+// A new draft test (with its answer key and an empty roster), from editor
+// questions. Returns its id: a readable slug of the title + a random suffix.
+export async function createTest(email, { displayName = '', minutes = 15, questions = [], strictMode = false } = {}) {
+  const testId = `${slugify(displayName || 'untitled-test')}-${randomSuffix()}`
+  const { publicQuestions, answers } = splitQuestions(questions)
+  const batch = writeBatch(db)
+  batch.set(testRef(testId), {
     displayName,
     minutes,
     questions: publicQuestions,
-    // The roster itself is in the owner-only roster subdoc (written below);
-    // it's only enforced when restrictAccess is true, and kept even when
-    // restriction is off so an admin can re-enable it without re-uploading.
-    restrictAccess: Boolean(restrictAccess),
-    // Strict mode: no exit button, forces fullscreen, auto-submits if the
-    // student navigates away or leaves fullscreen (enforced in TestInterface.jsx).
-    strictMode: Boolean(strictMode),
-    active: true,
+    status: 'draft',
+    strictMode,
+    restrictAccess: false,
+    createdBy: email,
     createdAt: serverTimestamp(),
-    createdBy,
+    updatedBy: email,
     updatedAt: serverTimestamp(),
-    updatedBy: createdBy,
     submissionCount: 0,
     lastSubmissionAt: null,
-  });
-  // createdBy here is checked directly by firestore.rules' answerKey create
-  // rule (not via isTestOwner's get() on the parent doc, which can't see
-  // this same batch's sibling write yet - see the rule's comment).
-  batch.set(answerKeyDoc(testId), { answers, createdBy });
-  batch.set(rosterDoc(testId), { allowedUsers: allowedUsers ?? [], createdBy });
-  await batch.commit();
-
-  return testId;
+  })
+  // createdBy on the subdocs lets the rules check ownership in this same batch.
+  batch.set(answerKeyRef(testId), { answers, createdBy: email })
+  batch.set(rosterRef(testId), { allowedUsers: [], createdBy: email })
+  await batch.commit()
+  return testId
 }
 
-export async function updateTest(testId, { displayName, minutes, questions, allowedUsers, restrictAccess, strictMode, active, updatedBy }) {
-  const patch = { updatedAt: serverTimestamp(), updatedBy };
-  if (displayName !== undefined) patch.displayName = displayName;
-  if (minutes !== undefined) patch.minutes = minutes;
-  if (restrictAccess !== undefined) patch.restrictAccess = restrictAccess;
-  if (strictMode !== undefined) patch.strictMode = strictMode;
-  if (active !== undefined) patch.active = active;
-
-  if (questions === undefined && allowedUsers === undefined) {
-    await updateDoc(doc(db, 'tests', testId), patch);
-    return;
-  }
-
-  const batch = writeBatch(db);
-  if (questions !== undefined) {
-    const { publicQuestions, answers } = splitQuestions(questions);
-    patch.questions = publicQuestions;
-    batch.set(answerKeyDoc(testId), { answers, createdBy: updatedBy });
-  }
-  if (allowedUsers !== undefined) {
-    batch.set(rosterDoc(testId), { allowedUsers, createdBy: updatedBy });
-  }
-  batch.update(doc(db, 'tests', testId), patch);
-  await batch.commit();
+// Saves the editor's draft: test fields, and the answer key with them so
+// the two never drift out of line.
+export async function saveTestDraft(testId, email, { displayName, minutes, questions }) {
+  const { publicQuestions, answers } = splitQuestions(questions)
+  const batch = writeBatch(db)
+  batch.update(testRef(testId), {
+    displayName,
+    minutes: Number(minutes) || 0,
+    questions: publicQuestions,
+    updatedBy: email,
+    updatedAt: serverTimestamp(),
+  })
+  batch.set(answerKeyRef(testId), { answers, createdBy: email })
+  await batch.commit()
 }
 
+// One-off settings (status, strict mode, access): saved straight away.
+export function updateTestFields(testId, email, fields) {
+  return updateDoc(testRef(testId), { ...fields, updatedBy: email, updatedAt: serverTimestamp() })
+}
+
+export async function saveRoster(testId, email, allowedUsers) {
+  const batch = writeBatch(db)
+  batch.set(rosterRef(testId), { allowedUsers, createdBy: email })
+  batch.update(testRef(testId), { updatedBy: email, updatedAt: serverTimestamp() })
+  await batch.commit()
+}
+
+// Deleting a test also removes its answer key, list and every submission -
+// writes a client can't make (submissions are functions-only), so it's a
+// Cloud Function.
+const deleteTestCallable = httpsCallable(functions, 'deleteTest')
 export async function deleteTest(testId) {
-  await deleteDoc(doc(db, 'tests', testId));
+  await deleteTestCallable({ testId })
 }
 
-// ---------- users ----------
+// ── People ────────────────────────────────────────────────────
 
 export async function upsertUser(email, data) {
-  await setDoc(doc(db, 'users', email), { email, ...data, lastSignInAt: serverTimestamp() }, { merge: true });
-}
-
-export async function getUser(email) {
-  const snap = await getDoc(doc(db, 'users', email));
-  return snap.exists() ? snap.data() : null;
+  await setDoc(doc(db, 'users', email), { email, ...data, lastSignInAt: serverTimestamp() }, { merge: true })
 }
 
 export async function hasUserTakenTest(email, testId) {
-  const user = await getUser(email);
-  return Boolean(user?.testsTaken?.[testId]);
+  const snap = await getDoc(doc(db, 'users', email))
+  return Boolean(snap.exists() && snap.data().testsTaken?.[testId])
 }
 
-// ---------- submissions: tests/{testId}/submissions/{normalizedStudentId} ----------
-
-function submissionsCol(testId) {
-  return collection(db, 'tests', testId, 'submissions');
-}
+// ── Submissions: tests/{testId}/submissions/{normalized Student ID} ──
 
 export async function getSubmission(testId, attemptId) {
-  const snap = await getDoc(doc(db, 'tests', testId, 'submissions', attemptId));
-  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+  const snap = await getDoc(doc(db, 'tests', testId, 'submissions', attemptId))
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null
 }
 
-// Starting an attempt (roster check + dedupe against an existing completed
-// attempt + the write itself) all happen inside the startTest Cloud
-// Function now - firestore.rules makes submissions writes function-only, so
-// this is the only way to create one. Returns the attempt id (the
-// normalized Student ID) to carry in the ?sid= param from here on.
-const startTestCallable = httpsCallable(functions, 'startTest');
+export function watchSubmissions(testId, ownerEmail, onChange, onError) {
+  const q = query(collection(db, 'tests', testId, 'submissions'), where('testOwnerEmail', '==', ownerEmail))
+  return onSnapshot(q, (snap) => onChange(snap.docs.map((d) => ({ id: d.id, ...d.data() }))), onError)
+}
 
+// Starting an attempt (roster check + dedupe + the write) happens inside the
+// startTest Cloud Function. Returns the attempt id (the normalized Student ID).
+const startTestCallable = httpsCallable(functions, 'startTest')
 export async function startTestAttempt(testId, name, studentId) {
-  const { data } = await startTestCallable({ testId, name, studentId });
-  return data.attemptId;
+  const { data } = await startTestCallable({ testId, name, studentId })
+  return data.attemptId
 }
 
-// Grading happens server-side (functions/index.js) so the answer key never
-// reaches a test-taker's browser - this just hands off the student's raw
-// picks and gets a score back.
-const submitTestCallable = httpsCallable(functions, 'submitTest');
-
+// Grading happens server-side so the answer key never reaches a candidate.
+const submitTestCallable = httpsCallable(functions, 'submitTest')
 export async function submitTestAttempt({ testId, attemptId, answers }) {
-  const { data } = await submitTestCallable({ testId, attemptId, answers });
-  return data; // { score, total }
+  const { data } = await submitTestCallable({ testId, attemptId, answers })
+  return data // { score, total }
 }
 
-export async function listSubmissionsForTest(testId, ownerEmail) {
-  const snap = await getDocs(query(submissionsCol(testId), where('testOwnerEmail', '==', ownerEmail)));
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-}
-
-// Deleting a submission touches another user's users/{email}.testsTaken flag
-// and the test's submissionCount - cross-document writes a client can't be
-// trusted to make correctly, so this goes through a Cloud Function too.
-const deleteSubmissionCallable = httpsCallable(functions, 'deleteSubmission');
-
+const deleteSubmissionCallable = httpsCallable(functions, 'deleteSubmission')
 export async function deleteSubmission(testId, attemptId) {
-  await deleteSubmissionCallable({ testId, attemptId });
-}
-
-// ---------- dashboard recents ----------
-
-export async function listRecentSubmissions(ownerEmail, max = 20) {
-  const snap = await getDocs(
-    query(
-      collectionGroup(db, 'submissions'),
-      where('testOwnerEmail', '==', ownerEmail),
-      where('testTaken', '==', true),
-      orderBy('submittedAt', 'desc'),
-      limit(max)
-    )
-  );
-  return snap.docs.map((d) => ({ id: d.id, testId: d.ref.parent.parent.id, ...d.data() }));
-}
-
-export async function listRecentlyCreatedTests(ownerEmail, max = 20) {
-  const snap = await getDocs(
-    query(collection(db, 'tests'), where('createdBy', '==', ownerEmail), orderBy('createdAt', 'desc'), limit(max))
-  );
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-}
-
-export async function listRecentlyEditedTests(ownerEmail, max = 20) {
-  const snap = await getDocs(
-    query(collection(db, 'tests'), where('createdBy', '==', ownerEmail), orderBy('updatedAt', 'desc'), limit(max))
-  );
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  await deleteSubmissionCallable({ testId, attemptId })
 }

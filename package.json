@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "dev:emulators": "vite --mode emulators",
-    "emulators": "firebase emulators:start --only auth,firestore,functions"
+    "emulators": "firebase emulators:start --only auth,firestore,functions",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-hypercbt \"node tests/firestore.rules.test.mjs\""
   },
   "dependencies": {
     "firebase": "^12.17.1",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@firebase/rules-unit-testing": "^5.0.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",

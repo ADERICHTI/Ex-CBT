@@ -1,0 +1,599 @@
+/* The test page (/tests/:testId/*): top-bar title and actions, the tab bar,
+   and the four tabs. Built on the Quality Tools tokens, like PeraForm's
+   form page. */
+
+/* ── Top bar: title ──────────────────────────────────────── */
+.title-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 8px 0 16px;
+  border-radius: var(--radius-pill);
+  background: var(--fill);
+  transition: background 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.title-field:focus-within {
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--line), 0 2px 8px rgb(0 0 0 / 0.04);
+}
+
+.title-field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-weight: 500;
+}
+
+.title-field .title-tool,
+.title-field .title-tool > .icon-btn {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+}
+
+.save-state {
+  flex-shrink: 0;
+  padding-right: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.save-error {
+  color: var(--danger);
+}
+
+/* ── Top bar: actions ────────────────────────────────────── */
+.test-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.test-actions .status {
+  margin-right: 4px;
+}
+
+.test-publish {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.test-missing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 64px 16px;
+  text-align: center;
+}
+
+.test-missing p {
+  color: var(--text-muted);
+}
+
+/* ── Tabs ────────────────────────────────────────────────── */
+.test-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.test-tabs {
+  position: sticky;
+  top: calc(-1 * clamp(20px, 3vw, 36px));
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin: calc(-1 * clamp(20px, 3vw, 36px)) 0 0;
+  padding: 12px 0;
+  background: var(--bg);
+}
+
+.test-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+
+.test-tab:hover {
+  background: var(--fill);
+  color: var(--text);
+}
+
+.test-tab.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ── Questions ───────────────────────────────────────────── */
+.questions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.questions-locked {
+  display: flex;
+  gap: 10px;
+}
+
+.questions-locked svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.questions-count {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.questions-warn {
+  color: var(--warning);
+}
+
+.questions-empty {
+  padding: 40px 16px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-card);
+  text-align: center;
+}
+
+.questions-empty p {
+  margin: 0 0 4px;
+}
+
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.questions-list:disabled {
+  opacity: 0.75;
+}
+
+.q-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s var(--ease);
+}
+
+.q-card:focus-within {
+  border-color: var(--accent);
+}
+
+.q-head {
+  display: flex;
+  gap: 12px;
+}
+
+.q-num {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.q-text {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: var(--fill);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.q-text:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+.q-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 40px;
+}
+
+.q-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.q-option input {
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.q-option input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.q-option.correct input {
+  border-color: var(--success);
+  background: var(--success-soft);
+}
+
+.q-mark {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.q-mark:hover {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.q-option.correct .q-mark {
+  border-color: var(--success);
+  background: var(--success);
+  color: #fff;
+}
+
+.q-add-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  margin-left: 40px;
+}
+
+.q-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.q-hint {
+  color: var(--warning);
+  font-size: 13px;
+}
+
+.q-tools {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.q-tools .icon-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.q-delete:hover {
+  color: var(--danger);
+}
+
+.questions-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ── Panels (Candidates, Results, Settings) ──────────────── */
+.tab-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-head h2 {
+  font-size: 16px;
+}
+
+.panel-tools {
+  display: flex;
+  gap: 4px;
+}
+
+.panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.unsaved {
+  margin-left: auto;
+  color: var(--warning);
+  font-size: 13px;
+}
+
+.btn-sm {
+  height: 34px;
+  padding: 0 12px;
+  gap: 6px;
+  font-size: 13px;
+}
+
+/* Tables made of grid rows (the approved list, results). */
+.grid-table {
+  display: flex;
+  flex-direction: column;
+  overflow-x: auto;
+}
+
+.grid-row {
+  display: grid;
+  align-items: center;
+  gap: 8px;
+  min-width: 520px;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.grid-head {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.roster-table .grid-row {
+  grid-template-columns: 32px 1fr 1fr 36px;
+}
+
+.results-table .grid-row {
+  grid-template-columns: minmax(160px, 2fr) 1fr 100px minmax(140px, 1.2fr) 36px;
+}
+
+.grid-cell {
+  display: flex;
+  min-width: 0;
+}
+
+.grid-row input {
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.grid-row input:hover {
+  background: var(--fill);
+}
+
+.grid-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+.grid-row-bad input {
+  background: var(--danger-soft);
+}
+
+.grid-num {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.people {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.people li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.stat strong {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.stat span {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.results-search {
+  flex: 1;
+  max-width: 360px;
+  height: 36px;
+}
+
+.results-who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.results-who small {
+  overflow: hidden;
+  color: var(--text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.results-score {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.results-score small {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* ── Settings ────────────────────────────────────────────── */
+.settings-minutes input {
+  max-width: 160px;
+}
+
+.settings-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-weight: 500;
+}
+
+.settings-link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-link code {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--fill);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+/* ── Smaller screens ─────────────────────────────────────── */
+@media (max-width: 767px) {
+  .test-tab span {
+    display: none;
+  }
+
+  .test-tab {
+    padding: 0 14px;
+  }
+
+  .test-actions .status,
+  .save-state {
+    display: none;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .q-options,
+  .q-add-option {
+    padding-left: 0;
+    margin-left: 0;
+  }
+}
+
+/* Narrow phones: the top bar's first row must fit (the link is also in
+   Settings; Publish/Close keep their icon and accessible name). */
+@media (max-width: 480px) {
+  .test-copy-link,
+  .test-publish-label {
+    display: none;
+  }
+
+  .test-publish {
+    width: 36px;
+    padding: 0;
+  }
+}

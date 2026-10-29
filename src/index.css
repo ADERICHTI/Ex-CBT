@@ -34,32 +34,6 @@
   --radius-control: 10px;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Older names still used by the test-management screens until they're
-     rebuilt (stage 2); they follow the tokens above, light and dark. */
-  --gm-surface: var(--surface);
-  --gm-surface-container: var(--fill);
-  --gm-on-surface: var(--text);
-  --gm-on-surface-variant: var(--text-muted);
-  --gm-outline: var(--line);
-  --gm-primary: var(--accent);
-  --gm-primary-dark: var(--accent-hover);
-  --gm-on-primary: var(--on-accent);
-  --gm-secondary-container: var(--accent-soft);
-  --gm-secondary-container-hover: var(--fill-strong);
-  --gm-on-secondary-container: var(--accent);
-  --gm-radius-sm: 8px;
-  --gm-radius-md: var(--radius-card);
-  --gm-radius-lg: 20px;
-  --gm-radius-full: var(--radius-pill);
-  --gm-shadow-soft: var(--shadow);
-  --mn-canvas: var(--bg);
-  --mn-hairline: var(--line);
-  --mn-faint: var(--fill-strong);
-  --brand-dark: var(--accent-hover);
-  --brand-soft: var(--accent-soft);
-  --brand-line: var(--line);
-  --brand-ink: var(--accent);
-
   color-scheme: light;
 }
 
@@ -171,9 +145,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* "body" lifts these above Tailwind's reset (loaded after this file while
-   the stage-1 management screens still use it); class utilities still win. */
-body :is(h1, h2, h3) {
+h1,
+h2,
+h3 {
   margin: 0;
   font-weight: 600;
   letter-spacing: -0.01em;

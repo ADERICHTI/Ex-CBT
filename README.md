@@ -23,6 +23,13 @@ npm run emulators          # auth, firestore, functions
 npm run dev:emulators      # the app, against the emulators
 ```
 
+Tests (each starts its own Firestore emulator):
+
+```
+npm run test:rules                 # security rules (tests/firestore.rules.test.mjs)
+cd functions && npm test           # Cloud Functions (functions/test/functions.test.mjs)
+```
+
 `npm run dev` runs against the real project and needs `.env` (copy
 `.env.example`) plus an App Check debug token.
 

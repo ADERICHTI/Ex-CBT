@@ -45,6 +45,7 @@ service cloud.firestore {
       // the owner-only roster subcollection below.
       allow create: if isSignedIn() &&
         request.resource.data.createdBy == request.auth.token.email &&
+        request.resource.data.status == 'draft' &&
         !('allowedUsers' in request.resource.data);
       // createdBy is fixed at creation: an owner can't hand a test (and its
       // submissions) to another account.
@@ -120,6 +121,15 @@ service cloud.firestore {
       allow update: if isOwnUserDoc(email) &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['testsTaken']);
       allow delete: if false;
+
+      // This person's own stars and folders for their tests (lib/organize.js):
+      //   users/{email}/testMeta/{testId}, users/{email}/folders/{folderId}
+      match /testMeta/{testId} {
+        allow read, write: if isOwnUserDoc(email);
+      }
+      match /folders/{folderId} {
+        allow read, write: if isOwnUserDoc(email);
+      }
     }
   }
 }

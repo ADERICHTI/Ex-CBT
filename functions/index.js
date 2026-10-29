@@ -36,8 +36,8 @@ function normalize(value) {
   return (value ?? '').toString().trim().toLowerCase();
 }
 
-// Same scheme as normalizeStudentId in src/services/firestore.js - keeping
-// the submission doc id derived from the student id (not id+timestamp)
+// The attempt (submission doc) id is derived from the Student ID (not
+// id+timestamp), which
 // makes "does this student already have an attempt" a plain get().
 function normalizeStudentId(studentId) {
   return normalize(studentId).replace(/\s+/g, '-');
@@ -83,7 +83,7 @@ export const startTest = onCall(async (request) => {
   }
 
   const testSnap = await db.doc(`tests/${testId}`).get();
-  if (!testSnap.exists || testSnap.data().active === false) {
+  if (!testSnap.exists || testSnap.data().status !== 'open' || !testSnap.data().questions?.length) {
     throw new HttpsError('not-found', 'This test is not available.');
   }
   const test = testSnap.data();
@@ -187,5 +187,26 @@ export const deleteSubmission = onCall(async (request) => {
   }
   await batch.commit();
 
+  return { deleted: true };
+});
+
+// Deleting a test takes its answer key, approved list and every submission
+// with it - submissions can't be deleted from a browser (firestore.rules),
+// and Firestore doesn't remove subcollections along with their parent.
+export const deleteTest = onCall(async (request) => {
+  const email = request.auth?.token?.email;
+  if (!email) throw new HttpsError('unauthenticated', 'Sign in required.');
+
+  const { testId } = request.data ?? {};
+  if (!testId) throw new HttpsError('invalid-argument', 'testId is required.');
+
+  const testRef = db.doc(`tests/${testId}`);
+  const testSnap = await testRef.get();
+  if (!testSnap.exists) return { deleted: false };
+  if (testSnap.data().createdBy !== email) {
+    throw new HttpsError('permission-denied', 'Only the test owner can delete it.');
+  }
+
+  await db.recursiveDelete(testRef);
   return { deleted: true };
 });

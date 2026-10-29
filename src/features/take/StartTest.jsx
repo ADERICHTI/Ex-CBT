@@ -81,7 +81,7 @@ function StartForm({ user }) {
       const found = await getTest(testId)
       if (cancelled) return
 
-      if (!found || found.active === false) {
+      if (!found || found.status !== 'open') {
         setStatus('expired')
         return
       }
