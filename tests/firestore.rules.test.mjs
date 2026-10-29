@@ -86,6 +86,9 @@ await check('own folder', assertSucceeds(setDoc(doc(owner, `users/${OWNER}/folde
 await check('can’t read someone else’s stars', assertFails(getDoc(doc(student, `users/${OWNER}/testMeta/t1`))))
 await check('can’t write someone else’s folders', assertFails(setDoc(doc(student, `users/${OWNER}/folders/f2`), { name: 'x' })))
 
+await check('own recent templates', assertSucceeds(setDoc(doc(owner, `users/${OWNER}/settings/templates`), { recentKeys: ['quick-quiz'] })))
+await check('can’t read someone else’s recent templates', assertFails(getDoc(doc(student, `users/${OWNER}/settings/templates`))))
+
 await check('owner deletes the test doc', assertSucceeds(deleteDoc(doc(owner, 'tests/t1'))))
 
 console.log(`\n${passed} passed, ${failed} failed`)

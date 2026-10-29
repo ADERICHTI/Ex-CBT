@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
-import { ArrowDownAZ, Filter, Folder, FolderPlus, LayoutGrid, List, MoreVertical, Plus, Star, Upload } from 'lucide-react'
+import { ArrowDownAZ, ChevronRight, Filter, Folder, FolderPlus, LayoutGrid, List, MoreVertical, Plus, Star, Upload } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import MenuButton from '../../lib/MenuButton.jsx'
 import { createFolder, deleteFolder, moveToFolder, renameFolder, setStarred, useOrganize } from '../../lib/organize.js'
@@ -11,10 +11,14 @@ import { useAuth } from '../auth/useAuth.js'
 import ImportDialog from './ImportDialog.jsx'
 import MoveDialog from './MoveDialog.jsx'
 import TestCard from './TestCard.jsx'
+import TestThumbnail from './TestThumbnail.jsx'
+import TemplateGallery from './TemplateGallery.jsx'
+import { saveRecentTemplateKey, START_ROW_KEYS, TEMPLATE_BY_KEY } from './templates.js'
 import { useMyTests } from './useMyTests.js'
 import './DashboardPage.css'
 
 const VIEW_KEY = 'hypercbt-dashboard-view'
+const START_TEMPLATES = START_ROW_KEYS.map((k) => TEMPLATE_BY_KEY[k])
 
 const FILTERS = {
   all: { label: 'Any status', test: () => true },
@@ -55,6 +59,7 @@ export default function DashboardPage() {
   const [view, setView] = useState(readSavedView)
   const [creating, setCreating] = useState(false)
   const [importing, setImporting] = useState(false)
+  const [galleryOpen, setGalleryOpen] = useState(false)
   const [actionError, setActionError] = useState('')
   const [toast, showToast] = useToast()
   const [pendingDelete, setPendingDelete] = useState(null)
@@ -101,6 +106,12 @@ export default function DashboardPage() {
     }
   }
 
+  function startFromTemplate(t) {
+    saveRecentTemplateKey(t.key, user.email)
+    setGalleryOpen(false)
+    startTest(t.build())
+  }
+
   async function copyLink(testId) {
     try {
       await navigator.clipboard.writeText(`${window.location.origin}/test/${testId}`)
@@ -127,6 +138,10 @@ export default function DashboardPage() {
     <div className="dash">
       <div className="dash-start-header">
         <span className="dash-start-title">Start a new test</span>
+        <button type="button" className="link-btn dash-gallery-btn" onClick={() => setGalleryOpen(true)}>
+          <span>Template gallery</span>
+          <ChevronRight size={16} />
+        </button>
       </div>
       <section className="dash-start" aria-label="Start a new test">
         <button
@@ -140,6 +155,20 @@ export default function DashboardPage() {
           </span>
           <span className="start-label">Blank test</span>
         </button>
+        {START_TEMPLATES.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            className="start-card"
+            onClick={() => startFromTemplate(t)}
+            disabled={creating}
+          >
+            <span className="start-visual">
+              <TestThumbnail title={t.preview.displayName} questions={t.preview.questions} />
+            </span>
+            <span className="start-label">{t.name}</span>
+          </button>
+        ))}
         <button type="button" className="start-card" onClick={() => setImporting(true)} disabled={creating}>
           <span className="start-visual start-visual-icon">
             <Upload size={30} strokeWidth={1.5} />
@@ -147,6 +176,14 @@ export default function DashboardPage() {
           <span className="start-label">Import questions</span>
         </button>
       </section>
+
+      <TemplateGallery
+        open={galleryOpen}
+        email={user.email}
+        onClose={() => setGalleryOpen(false)}
+        onPick={startFromTemplate}
+        creating={creating}
+      />
 
       <ImportDialog
         open={importing}
@@ -242,7 +279,7 @@ export default function DashboardPage() {
         ) : visible.length === 0 ? (
           <p className="dash-empty">
             {tests.length === 0
-              ? 'No tests yet. Start with a blank test or import your questions above.'
+              ? 'No tests yet. Start with a blank test, a template, or import your questions above.'
               : search
                 ? `No tests match “${rawSearch.trim()}”.`
                 : where === 'starred'

@@ -130,6 +130,10 @@ service cloud.firestore {
       match /folders/{folderId} {
         allow read, write: if isOwnUserDoc(email);
       }
+      // Recently used templates, synced across devices (dashboard).
+      match /settings/{settingId} {
+        allow read, write: if isOwnUserDoc(email);
+      }
     }
   }
 }

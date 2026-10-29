@@ -1,0 +1,72 @@
+/* Template gallery: a full page over the dashboard. */
+.gallery-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow-y: auto;
+  background: var(--bg);
+}
+
+.gallery-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+}
+
+.gallery-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.gallery-head h1 {
+  font-size: 20px;
+}
+
+.gallery-intro {
+  margin: -12px 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.gallery-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.gallery-section h2 {
+  font-size: 16px;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 20px 16px;
+}
+
+.gallery-card {
+  gap: 6px;
+}
+
+.gallery-card .start-label {
+  margin-top: 4px;
+}
+
+.gallery-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.start-visual .thumb {
+  height: 100%;
+}
