@@ -3,16 +3,21 @@ import { Download, Search, Trash2 } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import { useToast } from '../../lib/useToast.jsx'
 import { downloadCsv, submissionsToCsv } from '../../services/csv.js'
-import { deleteSubmission, watchSubmissions } from '../../services/firestore.js'
+import { testStats } from '../../lib/resultStats.js'
+import { deleteSubmission, getAnswerKey, watchSubmissions } from '../../services/firestore.js'
+import AnalyseResultsDialog from '../ai/AnalyseResultsDialog.jsx'
 import { useAuth } from '../auth/useAuth.js'
+import ResultsSummary from './ResultsSummary.jsx'
 import { useTestEditor } from './testContext.js'
 
 const toDate = (ts) => (ts?.toDate ? ts.toDate() : ts ? new Date(ts) : null)
 const pct = (score, total) => (total ? Math.round((score / total) * 100) : 0)
 const when = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 
-// Results tab: every submitted attempt with its score, a summary, search,
-// CSV download, and removing a result (which lets that person retake it).
+// Results tab, as in PeraForm: Summary (numbers, the spread of scores, each
+// question's picks, Analyse with AI) and Individual (every submitted
+// attempt with its score, search, CSV download, and removing a result -
+// which lets that person retake it).
 export default function ResultsTab() {
   const { test } = useTestEditor()
   const { user } = useAuth()
@@ -22,7 +27,22 @@ export default function ResultsTab() {
   const [search, setSearch] = useState('')
   const [pending, setPending] = useState(null)
   const [deleting, setDeleting] = useState(false)
+  const [view, setView] = useState('summary') // summary | individual
+  const [analysing, setAnalysing] = useState(false)
+  const [answers, setAnswers] = useState(null) // the answer key's correct options
   const total = test.questions?.length ?? 0
+
+  useEffect(() => {
+    let cancelled = false
+    getAnswerKey(test.id).then(
+      (key) => !cancelled && setAnswers(key.answers ?? []),
+      () => !cancelled && setAnswers([]),
+    )
+    return () => {
+      cancelled = true
+    }
+    // The key changes only when questions are saved; reload with the test.
+  }, [test.id, test.updatedAt])
 
   useEffect(
     () =>
@@ -50,16 +70,10 @@ export default function ResultsTab() {
     )
   }, [subs, search])
 
-  const summary = useMemo(() => {
-    if (!subs?.length) return null
-    const scores = subs.map((s) => pct(s.score ?? 0, total))
-    return {
-      count: subs.length,
-      average: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
-      highest: Math.max(...scores),
-      lowest: Math.min(...scores),
-    }
-  }, [subs, total])
+  const stats = useMemo(
+    () => (subs?.length && answers ? testStats(test.questions ?? [], answers, subs) : null),
+    [subs, answers, test.questions],
+  )
 
   function download() {
     const rows = visible.map((s) => ({
@@ -113,25 +127,22 @@ export default function ResultsTab() {
 
   return (
     <div className="tab-stack">
-      <section className="stats" aria-label="Summary">
-        <div className="stat">
-          <strong>{summary.count}</strong>
-          <span>submitted</span>
-        </div>
-        <div className="stat">
-          <strong>{summary.average}%</strong>
-          <span>average</span>
-        </div>
-        <div className="stat">
-          <strong>{summary.highest}%</strong>
-          <span>highest</span>
-        </div>
-        <div className="stat">
-          <strong>{summary.lowest}%</strong>
-          <span>lowest</span>
-        </div>
-      </section>
+      <div className="segmented results-switch" role="tablist" aria-label="Results view">
+        <button type="button" role="tab" aria-selected={view === 'summary'} className={view === 'summary' ? 'active' : ''} onClick={() => setView('summary')}>
+          Summary
+        </button>
+        <button type="button" role="tab" aria-selected={view === 'individual'} className={view === 'individual' ? 'active' : ''} onClick={() => setView('individual')}>
+          Individual
+        </button>
+      </div>
 
+      {view === 'summary' ? (
+        stats ? (
+          <ResultsSummary stats={stats} onAnalyse={() => setAnalysing(true)} />
+        ) : (
+          <p className="take-muted">Loading…</p>
+        )
+      ) : (
       <section className="panel">
         <header className="panel-head">
           <label className="searchbar results-search">
@@ -191,6 +202,15 @@ export default function ResultsTab() {
           </div>
         )}
       </section>
+      )}
+
+      <AnalyseResultsDialog
+        open={analysing}
+        onClose={() => setAnalysing(false)}
+        testId={test.id}
+        questions={test.questions ?? []}
+        count={subs.length}
+      />
 
       <ConfirmModal
         open={Boolean(pending)}

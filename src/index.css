@@ -17,6 +17,7 @@
   --accent: #b85a00;
   --accent-hover: #9a4a00;
   --accent-soft: rgb(234 122 16 / 0.12);
+  --chart-bar: #b85a00; /* validated vs #fff (dataviz validator) */
   --on-accent: #ffffff;
   --shadow: 0 0 10px rgb(0 0 0 / 0.03), 0 1px 2px rgb(0 0 0 / 0.03);
   --backdrop: rgb(15 16 20 / 0.3);
@@ -50,6 +51,7 @@
     --accent: #fb923c;
     --accent-hover: #fdba74;
     --accent-soft: rgb(251 146 60 / 0.14);
+  --chart-bar: #e8690c; /* validated vs #15161b; #fb923c is too light */
     --on-accent: #0e0f13;
     --shadow: 0 0 10px rgb(0 0 0 / 0.3);
     --backdrop: rgb(0 0 0 / 0.5);
@@ -76,6 +78,7 @@
   --accent: #fb923c;
   --accent-hover: #fdba74;
   --accent-soft: rgb(251 146 60 / 0.14);
+  --chart-bar: #e8690c; /* validated vs #15161b; #fb923c is too light */
   --on-accent: #0e0f13;
   --shadow: 0 0 10px rgb(0 0 0 / 0.3);
   --backdrop: rgb(0 0 0 / 0.5);
