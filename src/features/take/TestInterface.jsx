@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Clock, Send, TriangleAlert, X } from 'lucide-react';
 import { useTestSession } from '../../hooks/useTestSession';
 import { getSubmission, getTest, submitTestAttempt } from '../../services/firestore';
-import LoadingScreen from '../../components/LoadingScreen';
+import Spinner from '../../lib/Spinner.jsx';
 import ConfirmModal from '../../lib/ConfirmModal.jsx';
 import LogoMark from '../../lib/LogoMark.jsx';
 import { useToast } from '../../lib/useToast.jsx';
@@ -142,7 +142,7 @@ export default function TestInterface() {
     };
   }, [status, test?.strictMode]);
 
-  if (status !== 'ready') return <LoadingScreen label="Loading your test…" />;
+  if (status !== 'ready') return <Spinner fill="page" label="Loading your test" />;
 
   const questions = test.questions;
 

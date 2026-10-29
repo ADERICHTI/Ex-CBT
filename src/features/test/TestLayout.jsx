@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Link, NavLink, Outlet, useParams } from 'react-router-dom'
 import { BarChart3, ListChecks, Settings, Users } from 'lucide-react'
 import AppShell from '../../lib/AppShell.jsx'
-import LoadingScreen from '../../components/LoadingScreen.jsx'
+import Spinner from '../../lib/Spinner.jsx'
 import TestActions from './TestActions.jsx'
 import TestEditorProvider from './TestEditorProvider.jsx'
 import TestTitleField from './TestTitleField.jsx'
@@ -75,7 +75,7 @@ function TestFrame({ testId }) {
           <Outlet />
         </div>
       ) : (
-        <LoadingScreen label="Opening the test…" />
+        <Spinner label="Opening the test" />
       )}
     </AppShell>
   )

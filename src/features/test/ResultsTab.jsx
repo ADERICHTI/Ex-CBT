@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Download, Search, Trash2 } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
+import Spinner from '../../lib/Spinner.jsx'
 import { useToast } from '../../lib/useToast.jsx'
 import { downloadCsv, submissionsToCsv } from '../../services/csv.js'
 import { testStats } from '../../lib/resultStats.js'
@@ -112,7 +113,7 @@ export default function ResultsTab() {
       </p>
     )
   }
-  if (!subs) return <p className="take-muted">Loading…</p>
+  if (!subs) return <Spinner fill="box" label="Loading results" />
 
   if (subs.length === 0) {
     return (
@@ -142,7 +143,7 @@ export default function ResultsTab() {
         stats ? (
           <ResultsSummary stats={stats} onAnalyse={() => setAnalysing(true)} />
         ) : (
-          <p className="take-muted">Loading…</p>
+          <Spinner fill="box" label="Working out the summary" />
         )
       ) : (
       <section className="panel">

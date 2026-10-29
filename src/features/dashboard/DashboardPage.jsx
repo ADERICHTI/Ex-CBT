@@ -3,6 +3,7 @@ import { useNavigate, useOutletContext } from 'react-router-dom'
 import { ArrowDownAZ, ChevronRight, Filter, Folder, FolderPlus, LayoutGrid, List, MoreVertical, Plus, Sparkles, Star, Upload } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import MenuButton from '../../lib/MenuButton.jsx'
+import Spinner from '../../lib/Spinner.jsx'
 import { createFolder, deleteFolder, moveToFolder, renameFolder, setStarred, useOrganize } from '../../lib/organize.js'
 import PromptDialog from '../../lib/PromptDialog.jsx'
 import { useToast } from '../../lib/useToast.jsx'
@@ -277,11 +278,7 @@ export default function DashboardPage() {
         </nav>
 
         {loading ? (
-          <div className={`tests tests-${view}`} aria-busy="true">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="skeleton" />
-            ))}
-          </div>
+          <Spinner label="Loading your tests" />
         ) : error ? (
           <p className="form-error" role="alert">
             Couldn’t load your tests. Check your connection and refresh.

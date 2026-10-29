@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Download, Plus, Upload, X } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
+import Spinner from '../../lib/Spinner.jsx'
 import { timeAgo } from '../../lib/timeAgo.js'
 import { useToast } from '../../lib/useToast.jsx'
 import {
@@ -126,7 +127,7 @@ export default function CandidatesTab() {
       </p>
     )
   }
-  if (!saved) return <p className="take-muted">Loading…</p>
+  if (!saved) return <Spinner fill="box" label="Loading the approved list" />
 
   const canRestrict = restrict || saved.length > 0
 

@@ -121,26 +121,6 @@
   flex-direction: column;
 }
 
-.skeleton {
-  border-radius: 8px;
-  background: var(--fill);
-  animation: pulse 1.4s ease-in-out infinite;
-}
-
-.tests-grid .skeleton {
-  aspect-ratio: 4 / 4.2;
-}
-
-.tests-list .skeleton {
-  height: 52px;
-  margin-bottom: 8px;
-}
-
-@keyframes pulse {
-  50% {
-    opacity: 0.5;
-  }
-}
 
 /* ── Test card (grid) ────────────────────────────────────── */
 /* No overflow: hidden here — the ⋮ menu popover must be able to spill

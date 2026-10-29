@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, Clock, Hourglass, Info, ListChecks, Unlink } from 'lucide-react'
 import { useTestSession } from '../../hooks/useTestSession'
 import { getTest, hasUserTakenTest, startTestAttempt } from '../../services/firestore'
-import LoadingScreen from '../../components/LoadingScreen'
+import Spinner from '../../lib/Spinner.jsx'
 import GoogleMark from '../../lib/GoogleMark.jsx'
 import { authErrorMessage, signInWithGoogle } from '../auth/authActions.js'
 import { useGoogleOneTap } from '../auth/oneTap.js'
@@ -18,7 +18,7 @@ export default function StartTest() {
   const signedIn = isSignedIn(user)
   useGoogleOneTap({ enabled: !loading && !signedIn })
 
-  if (loading) return <LoadingScreen />
+  if (loading) return <Spinner />
   return signedIn ? <StartForm user={user} /> : <SignInHere />
 }
 
@@ -167,7 +167,7 @@ function StartForm({ user }) {
     }
   }
 
-  if (status === 'loading') return <LoadingScreen label="Opening the test…" />
+  if (status === 'loading') return <Spinner label="Opening the test" />
 
   if (status === 'expired' || status === 'no-id') {
     const Icon = status === 'expired' ? Hourglass : Unlink

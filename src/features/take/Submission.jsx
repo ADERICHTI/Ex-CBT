@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { CircleCheck } from 'lucide-react'
 import { useTestSession } from '../../hooks/useTestSession'
 import { hasUserTakenTest } from '../../services/firestore'
-import LoadingScreen from '../../components/LoadingScreen'
+import Spinner from '../../lib/Spinner.jsx'
 import { useAuth } from '../auth/useAuth.js'
 import './take.css'
 
@@ -36,7 +36,7 @@ export default function Submission() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [testId, user.email])
 
-  if (checking) return <LoadingScreen />
+  if (checking) return <Spinner />
 
   const alreadyTaken = reason === 'already-taken'
 

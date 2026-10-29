@@ -12,7 +12,7 @@ import {
   signInWithGoogle,
 } from './authActions.js'
 import { isSignedIn, useAuth } from './useAuth.js'
-import LoadingScreen from '../../components/LoadingScreen.jsx'
+import Spinner from '../../lib/Spinner.jsx'
 import GoogleMark from '../../lib/GoogleMark.jsx'
 import LogoMark from '../../lib/LogoMark.jsx'
 import './SignInPage.css'
@@ -64,7 +64,7 @@ export default function SignInPage() {
     // Once, when the page opens from a link.
   }, [linkOpened])
 
-  if (loading) return <LoadingScreen />
+  if (loading) return <Spinner fill="page" />
   if (isSignedIn(user)) return <Navigate to={next} replace />
 
   function switchMode(nextMode) {
