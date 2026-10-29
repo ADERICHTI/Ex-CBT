@@ -19,7 +19,11 @@ export default function RequireVerified() {
   async function resend() {
     setBusy(true)
     try {
-      await resendVerification()
+      if ((await resendVerification()) === 'verified') {
+        // Already verified (e.g. in another tab): pick it up straight away.
+        await recheck()
+        return
+      }
       setStatus(`Sent. Check ${user.email} (and the spam folder), then press “I’ve verified”.`)
     } catch (err) {
       setStatus(

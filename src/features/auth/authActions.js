@@ -10,7 +10,7 @@ import {
   signOut as firebaseSignOut,
   updateProfile,
 } from 'firebase/auth'
-import { getFirebaseAuth, googleProvider } from '../../lib/firebase.js'
+import { callSendVerification, getFirebaseAuth, googleProvider } from '../../lib/firebase.js'
 
 export function signInWithGoogle() {
   return signInWithPopup(getFirebaseAuth(), googleProvider)
@@ -23,12 +23,27 @@ export function signInWithEmail(email, password) {
 export async function createAccount(name, email, password) {
   const { user } = await createUserWithEmailAndPassword(getFirebaseAuth(), email, password)
   if (name) await updateProfile(user, { displayName: name })
-  await sendEmailVerification(user).catch(() => {})
+  await resendVerification().catch(() => {})
   return user
 }
 
-export function resendVerification() {
-  return sendEmailVerification(getFirebaseAuth().currentUser)
+// The verify-your-email link. Sent from the Quality Tools mailbox in
+// HyperCBT's wording when that works; otherwise Firebase's own email. Only
+// "too many requests" is passed on (the person should wait, not get a
+// second email). Returns 'verified' if the account turns out to be
+// verified already.
+export async function resendVerification() {
+  try {
+    const { data } = await callSendVerification({ app: 'hypercbt' })
+    if (data?.verified) return 'verified'
+    if (data?.sent) return 'sent'
+  } catch (err) {
+    if (err?.code === 'functions/resource-exhausted') {
+      throw Object.assign(new Error(err.message), { code: 'auth/too-many-requests' })
+    }
+  }
+  await sendEmailVerification(getFirebaseAuth().currentUser)
+  return 'sent'
 }
 
 // After clicking the link in another tab: refresh the account and its
