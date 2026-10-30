@@ -1,10 +1,16 @@
-import { useEffect, useRef } from 'react'
-import './ConfirmModal.css'
+import { CircleHelp, Trash2 } from 'lucide-react'
+import IdeaArt from '../features/ai/IdeaArt.jsx'
+import QtWindow, { QtActions } from './QtWindow.jsx'
 
-// "Are you sure?" dialog - every delete/remove action goes through this
-// (and the test's Submit/Exit questions). Built on <dialog> so focus
-// trapping and Escape-to-close come for free.
-//   tone - 'danger' (red confirm button, the default) or 'primary'
+const DANGER_ART = { sky: '#ffeceb', sky2: '#ffcdca', ground: '#f59c95', accent: '#d64541' }
+
+// "Are you sure?" - every delete/remove action goes through this (and the
+// test's Submit/Leave questions), in the Quality Tools window.
+//   tone    - 'danger' (red, the default) or 'primary'
+//   label   - the window's name on top (defaults to the confirm button's)
+//   context - the thing it's about, e.g. the test's name
+//   icon    - the tile's icon (bin for danger, a question mark otherwise)
+//   art     - show the illustration (for big, can't-undo deletes)
 export default function ConfirmModal({
   open,
   title,
@@ -13,44 +19,45 @@ export default function ConfirmModal({
   cancelLabel = 'Cancel',
   tone = 'danger',
   busy = false,
+  label,
+  context,
+  icon,
+  art = false,
   onConfirm,
   onCancel,
 }) {
-  const ref = useRef(null)
-
-  useEffect(() => {
-    const dialog = ref.current
-    if (open && !dialog.open) dialog.showModal()
-    if (!open && dialog.open) dialog.close()
-  }, [open])
-
+  const danger = tone !== 'primary'
   return (
-    <dialog
-      ref={ref}
-      className="confirm"
-      onCancel={(e) => {
-        e.preventDefault()
-        if (!busy) onCancel()
-      }}
-      onClick={(e) => e.target === ref.current && !busy && onCancel()}
+    <QtWindow
+      open={open}
+      onClose={onCancel}
+      icon={icon ?? (danger ? Trash2 : CircleHelp)}
+      label={label ?? confirmLabel}
+      context={context}
+      tone={danger ? 'danger' : 'accent'}
+      busy={busy}
     >
-      <div className="confirm-body">
-        <h2>{title}</h2>
-        {message && <p>{message}</p>}
-        <div className="confirm-actions">
-          <button type="button" className="btn btn-ghost" onClick={onCancel} disabled={busy}>
-            {cancelLabel}
-          </button>
-          <button
-            type="button"
-            className={`btn ${tone === 'primary' ? 'btn-primary' : 'btn-danger'}`}
-            onClick={onConfirm}
-            disabled={busy}
-          >
-            {busy ? 'Working…' : confirmLabel}
-          </button>
-        </div>
-      </div>
-    </dialog>
+      {art && danger && (
+        <span className="qt-win-art">
+          <IdeaArt art={DANGER_ART} icon="Trash2" />
+        </span>
+      )}
+      <h2 className="qt-win-title">{title}</h2>
+      {message && <p className="qt-win-hint">{message}</p>}
+      <QtActions>
+        <button type="button" className="btn btn-ghost" onClick={onCancel} disabled={busy}>
+          {cancelLabel}
+        </button>
+        <button
+          type="button"
+          className={`btn ${danger ? 'btn-danger' : 'btn-primary'}`}
+          onClick={onConfirm}
+          disabled={busy}
+          autoFocus={!danger}
+        >
+          {busy ? 'Working…' : confirmLabel}
+        </button>
+      </QtActions>
+    </QtWindow>
   )
 }

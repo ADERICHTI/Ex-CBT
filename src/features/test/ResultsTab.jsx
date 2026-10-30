@@ -218,12 +218,15 @@ export default function ResultsTab() {
         open={analysing}
         onClose={() => setAnalysing(false)}
         testId={test.id}
+        title={test.displayName}
         questions={test.questions ?? []}
         count={subs.length}
       />
 
       <ConfirmModal
         open={Boolean(pending)}
+        label="Delete result"
+        context={test.displayName}
         title={`Delete ${pending?.name || 'this'}’s result?`}
         message="Their answers and score are removed for good, and they’ll be able to take the test again."
         busy={deleting}

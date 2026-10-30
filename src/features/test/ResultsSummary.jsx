@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { AlertTriangle, ArrowDown, ArrowUp, CircleCheck, CircleSlash, Info, Sparkles } from 'lucide-react'
+import { AlertTriangle, ArrowDown, ArrowUp, CircleCheck, CircleSlash, Info } from 'lucide-react'
 import { MIN_FOR_GROUPS } from '../../lib/resultStats.js'
+import DawnOrb from '../ai/DawnOrb.jsx'
 
 const pct = (rate) => (rate == null ? '-' : `${Math.round(rate * 100)}%`)
 
@@ -53,7 +54,7 @@ export default function ResultsSummary({ stats, onAnalyse }) {
           </small>
         </span>
         <button type="button" className="btn btn-primary btn-sm" onClick={onAnalyse}>
-          <Sparkles size={15} /> Analyse with AI
+          <DawnOrb size={18} /> Analyse with Dawn
         </button>
       </section>
 

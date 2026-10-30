@@ -1,51 +1,35 @@
-import { useEffect, useRef, useState } from 'react'
-import './ConfirmModal.css'
+import { useEffect, useState } from 'react'
+import { FolderPlus } from 'lucide-react'
+import QtWindow from './QtWindow.jsx'
 
-// Small "name this" dialog (new folder, rename folder).
-export default function PromptDialog({ open, title, label, initial = '', confirmLabel = 'Save', onSubmit, onCancel }) {
-  const ref = useRef(null)
+// Small "name this" window (new folder, rename folder), in the Quality
+// Tools window: the question, then one clean field with its button inside.
+export default function PromptDialog({ open, title, label, question, initial = '', confirmLabel = 'Save', icon = FolderPlus, onSubmit, onCancel }) {
   const [value, setValue] = useState(initial)
 
+  // A fresh value each time it opens.
   useEffect(() => {
-    const dialog = ref.current
-    if (open && !dialog.open) {
-      setValue(initial)
-      dialog.showModal()
-    }
-    if (!open && dialog.open) dialog.close()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset on open
+    if (open) setValue(initial)
   }, [open, initial])
 
   return (
-    <dialog
-      ref={ref}
-      className="confirm"
-      onCancel={(e) => {
-        e.preventDefault()
-        onCancel()
-      }}
-      onClick={(e) => e.target === ref.current && onCancel()}
+    <QtWindow
+      open={open}
+      onClose={onCancel}
+      icon={icon}
+      label={title}
+      title={question ?? `${label}?`}
+      as="form"
+      onSubmit={() => value.trim() && onSubmit(value.trim())}
     >
-      <form
-        className="confirm-body"
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (value.trim()) onSubmit(value.trim())
-        }}
-      >
-        <h2>{title}</h2>
-        <label className="field">
-          <span>{label}</span>
-          <input value={value} onChange={(e) => setValue(e.target.value)} maxLength={80} autoFocus />
-        </label>
-        <div className="confirm-actions">
-          <button type="button" className="btn btn-ghost" onClick={onCancel}>
-            Cancel
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={!value.trim()}>
-            {confirmLabel}
-          </button>
-        </div>
-      </form>
-    </dialog>
+      <label className="qt-field">
+        <span className="sr-only">{label}</span>
+        <input value={value} onChange={(e) => setValue(e.target.value)} maxLength={80} autoFocus placeholder={label} />
+        <button type="submit" className="btn btn-primary" disabled={!value.trim()}>
+          {confirmLabel}
+        </button>
+      </label>
+    </QtWindow>
   )
 }

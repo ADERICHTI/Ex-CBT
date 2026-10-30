@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
-import { ArrowDownAZ, ChevronRight, Filter, Folder, FolderPlus, LayoutGrid, List, MoreVertical, Plus, Sparkles, Star, Upload } from 'lucide-react'
+import { ArrowDownAZ, ChevronRight, Filter, Folder, FolderPlus, LayoutGrid, List, MoreVertical, Plus, Star, Upload } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import MenuButton from '../../lib/MenuButton.jsx'
 import Spinner from '../../lib/Spinner.jsx'
@@ -9,6 +9,7 @@ import PromptDialog from '../../lib/PromptDialog.jsx'
 import { useToast } from '../../lib/useToast.jsx'
 import { createTest, deleteTest, STATUS_LABELS } from '../../services/firestore.js'
 import CreateTestDialog from '../ai/CreateTestDialog.jsx'
+import DawnOrb from '../ai/DawnOrb.jsx'
 import { useAuth } from '../auth/useAuth.js'
 import ImportDialog from './ImportDialog.jsx'
 import MoveDialog from './MoveDialog.jsx'
@@ -63,6 +64,7 @@ export default function DashboardPage() {
   const [importing, setImporting] = useState(false)
   const [galleryOpen, setGalleryOpen] = useState(false)
   const [aiOpen, setAiOpen] = useState(false)
+  const [aiMode, setAiMode] = useState('describe') // how Dawn's window opens
   const [actionError, setActionError] = useState('')
   const [toast, showToast] = useToast()
   const [pendingDelete, setPendingDelete] = useState(null)
@@ -147,11 +149,11 @@ export default function DashboardPage() {
         </button>
       </div>
       <section className="dash-start" aria-label="Start a new test">
-        <button type="button" className="start-card start-card-ai" onClick={() => setAiOpen(true)} disabled={creating}>
+        <button type="button" className="start-card start-card-ai" onClick={() => { setAiMode('describe'); setAiOpen(true) }} disabled={creating}>
           <span className="start-visual start-visual-icon start-visual-ai">
-            <Sparkles size={32} strokeWidth={1.5} />
+            <DawnOrb size={44} />
           </span>
-          <span className="start-label">Create with AI</span>
+          <span className="start-label">Create with Dawn</span>
         </button>
         <button
           type="button"
@@ -186,7 +188,7 @@ export default function DashboardPage() {
         </button>
       </section>
 
-      <CreateTestDialog open={aiOpen} onClose={() => setAiOpen(false)} />
+      <CreateTestDialog open={aiOpen} initialMode={aiMode} onClose={() => setAiOpen(false)} />
 
       <TemplateGallery
         open={galleryOpen}
@@ -200,6 +202,11 @@ export default function DashboardPage() {
         open={importing}
         onClose={() => setImporting(false)}
         onCreate={startTest}
+        onDawn={() => {
+          setImporting(false)
+          setAiMode('notes')
+          setAiOpen(true)
+        }}
         busy={creating}
       />
 
@@ -318,6 +325,8 @@ export default function DashboardPage() {
 
       <ConfirmModal
         open={Boolean(pendingDelete)}
+        label="Delete test"
+        art
         title={`Delete “${pendingDelete?.displayName || 'Untitled test'}”?`}
         message="This permanently deletes the test, its approved list and every candidate’s result. This can’t be undone."
         busy={deleting}
@@ -347,6 +356,7 @@ export default function DashboardPage() {
         open={Boolean(naming)}
         title={naming?.kind === 'rename' ? 'Rename folder' : 'New folder'}
         label="Folder name"
+        question="What should the folder be called?"
         initial={naming?.folder?.name ?? ''}
         confirmLabel={naming?.kind === 'rename' ? 'Rename' : 'Create'}
         onCancel={() => setNaming(null)}
@@ -374,6 +384,7 @@ export default function DashboardPage() {
 
       <ConfirmModal
         open={Boolean(deletingFolder)}
+        label="Delete folder"
         title={`Delete the folder “${deletingFolder?.name}”?`}
         message="The tests inside aren’t deleted - they move back to My tests."
         confirmLabel="Delete folder"

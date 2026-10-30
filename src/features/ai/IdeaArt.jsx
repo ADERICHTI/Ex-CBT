@@ -1,13 +1,16 @@
 import { useId } from 'react'
 import {
+  Trash2,
+  FolderOpen,
+  FileSpreadsheet,
   Atom,
-  BookOpen,
   Calculator,
   FlaskConical,
   Globe2,
   Languages,
   Landmark,
   ShieldCheck,
+  BookOpen,
   Briefcase,
   Cake,
   CalendarCheck,
@@ -21,15 +24,16 @@ import {
   Shirt,
 } from 'lucide-react'
 
-const ICONS = { Atom, Calculator, FlaskConical, Globe2, Languages, Landmark, ShieldCheck, BookOpen, Briefcase, Cake, CalendarCheck, ClipboardList, GraduationCap, HandHeart, HeartPulse, PartyPopper, PawPrint, Plane, Shirt }
+const ICONS = { Trash2, FolderOpen, FileSpreadsheet, Atom, Calculator, FlaskConical, Globe2, Languages, Landmark, ShieldCheck, BookOpen, Briefcase, Cake, CalendarCheck, ClipboardList, GraduationCap, HandHeart, HeartPulse, PartyPopper, PawPrint, Plane, Shirt }
 
 // A Create-with-AI idea's picture: a soft flat scene in the idea's colours
 // (sky, sun, rolling hills, a few sparkles), a little form floating in it,
-// and the idea's icon in a badge. Same art as PeraForm's (Quality Tools).
+// and the idea's icon in a badge. Drawn here, so it's PeraForm's own art.
 //   art: { sky, sky2, ground, accent }; flip: mirror the layout
+//   icon: a lucide icon component, or one of the names above
 export default function IdeaArt({ art, icon, flip = false }) {
   const id = useId()
-  const Icon = ICONS[icon] ?? ClipboardList
+  const Icon = (typeof icon === 'string' ? ICONS[icon] : icon) ?? ClipboardList
   return (
     <span className={`idea-art${flip ? ' is-flipped' : ''}`} aria-hidden="true">
       <svg viewBox="0 0 300 150" preserveAspectRatio="xMidYMid slice">

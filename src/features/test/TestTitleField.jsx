@@ -69,6 +69,7 @@ export default function TestTitleField() {
         open={naming}
         title="New folder"
         label="Folder name"
+        question="What should the folder be called?"
         confirmLabel="Create and move"
         onCancel={() => setNaming(false)}
         onSubmit={async (name) => {

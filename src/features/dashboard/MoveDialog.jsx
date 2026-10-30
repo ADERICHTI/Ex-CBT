@@ -1,56 +1,35 @@
-import { useEffect, useRef } from 'react'
-import { Check, Folder, FolderPlus, Inbox, X } from 'lucide-react'
+import { Check, Folder, FolderInput, FolderPlus, Inbox } from 'lucide-react'
+import QtWindow from '../../lib/QtWindow.jsx'
 
-// "Move to folder" picker for a dashboard card.
+// "Move to folder" for a dashboard card, in the Quality Tools window.
 export default function MoveDialog({ test, folders, currentId, onMove, onNewFolder, onClose }) {
-  const ref = useRef(null)
-  const open = Boolean(test)
-
-  useEffect(() => {
-    const dialog = ref.current
-    if (open && !dialog.open) dialog.showModal()
-    if (!open && dialog.open) dialog.close()
-  }, [open])
-
   const choices = [{ id: null, name: 'My tests (no folder)', icon: Inbox }, ...folders.map((f) => ({ ...f, icon: Folder }))]
-
+  const here = currentId ?? null
   return (
-    <dialog
-      ref={ref}
-      className="confirm move-dialog"
-      onCancel={(e) => {
-        e.preventDefault()
-        onClose()
-      }}
-      onClick={(e) => e.target === ref.current && onClose()}
+    <QtWindow
+      open={Boolean(test)}
+      onClose={onClose}
+      icon={FolderInput}
+      label="Move"
+      context={test?.displayName || 'Untitled test'}
+      title="Where should it go?"
+      hint="Folders are just for you: they don’t change the test or who can take it."
     >
-      <div className="confirm-body">
-        <div className="collab-head">
-          <h2>Move “{test?.displayName || 'Untitled test'}”</h2>
-          <button type="button" className="icon-btn" onClick={onClose} aria-label="Close">
-            <X size={18} />
-          </button>
-        </div>
-        <ul className="move-list">
-          {choices.map(({ id, name, icon: Icon }) => (
-            <li key={id ?? 'none'}>
-              <button
-                type="button"
-                className={`move-choice${(currentId ?? null) === id ? ' on' : ''}`}
-                onClick={() => onMove(id, name)}
-              >
-                <Icon size={18} />
-                <span>{name}</span>
-                {(currentId ?? null) === id && <Check size={16} />}
-              </button>
-            </li>
-          ))}
-        </ul>
-        <button type="button" className="link-btn move-new" onClick={onNewFolder}>
-          <FolderPlus size={16} />
-          New folder
-        </button>
-      </div>
-    </dialog>
+      <ul className="qt-list">
+        {choices.map(({ id, name, icon: Icon }) => (
+          <li key={id ?? 'none'}>
+            <button type="button" className={`qt-choice${here === id ? ' is-on' : ''}`} onClick={() => onMove(id, name)}>
+              <Icon size={18} />
+              <span>{name}</span>
+              {here === id && <Check size={16} aria-label="Here now" />}
+            </button>
+          </li>
+        ))}
+      </ul>
+      <button type="button" className="link-btn move-new" onClick={onNewFolder}>
+        <FolderPlus size={16} />
+        New folder
+      </button>
+    </QtWindow>
   )
 }

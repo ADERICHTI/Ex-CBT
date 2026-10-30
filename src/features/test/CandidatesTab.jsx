@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Download, Plus, Upload, X } from 'lucide-react'
+import { Download, Plus, Upload, UserMinus, X } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import Spinner from '../../lib/Spinner.jsx'
 import { timeAgo } from '../../lib/timeAgo.js'
@@ -288,6 +288,8 @@ export default function CandidatesTab() {
 
       <ConfirmModal
         open={removing !== null}
+        label="Remove from the list"
+        icon={UserMinus}
         title="Remove this person from the list?"
         message={
           removing !== null

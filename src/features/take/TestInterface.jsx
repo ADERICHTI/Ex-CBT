@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Clock, Send, TriangleAlert, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, LogOut, Send, TriangleAlert, X } from 'lucide-react';
 import { useTestSession } from '../../hooks/useTestSession';
 import { getSubmission, getTest, submitTestAttempt } from '../../services/firestore';
 import Spinner from '../../lib/Spinner.jsx';
@@ -303,6 +303,9 @@ export default function TestInterface() {
 
       <ConfirmModal
         open={showModal}
+        label="Submit test"
+        context={test.displayName}
+        icon={Send}
         title="Submit your test?"
         message={
           answeredCount < questions.length
@@ -318,6 +321,8 @@ export default function TestInterface() {
       />
       <ConfirmModal
         open={showExitModal}
+        label="Leave test"
+        icon={LogOut}
         title="Leave the test?"
         message="Your answers so far won’t be saved."
         confirmLabel="Leave"

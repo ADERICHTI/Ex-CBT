@@ -177,6 +177,9 @@ export default function TestActions() {
       />
       <ConfirmModal
         open={confirm === 'close'}
+        label="Close test"
+        context={draft.displayName || 'Untitled test'}
+        icon={Square}
         title="Close this test?"
         message="New candidates won’t be able to start it. Anyone already taking it can still submit. You can reopen it any time."
         confirmLabel="Close test"
@@ -187,6 +190,8 @@ export default function TestActions() {
       />
       <ConfirmModal
         open={confirm === 'delete'}
+        label="Delete test"
+        art
         title={`Delete “${draft.displayName || 'Untitled test'}”?`}
         message="This permanently deletes the test, its approved list and every candidate’s result. This can’t be undone."
         busy={busy}

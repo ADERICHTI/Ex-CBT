@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react'
-import { ArrowDown, ArrowUp, ChevronDown, CircleCheck, Copy, Lock, MessageSquareText, Plus, Sparkles, Trash2, Upload, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronDown, CircleCheck, Copy, Lock, MessageSquareText, Plus, Trash2, Upload, X } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import MenuButton from '../../lib/MenuButton.jsx'
 import { useToast } from '../../lib/useToast.jsx'
 import { parseQuestionsFile } from '../../services/csv.js'
 import { DIFFICULTIES, newQuestionId } from '../../services/firestore.js'
 import ReviewDialog from '../ai/ReviewDialog.jsx'
+import DawnOrb from '../ai/DawnOrb.jsx'
 import { useTestEditor } from './testContext.js'
 
 const blankQuestion = () => ({
@@ -144,7 +145,7 @@ export default function QuestionsTab() {
         </p>
         {!locked && questions.length > 0 && (
           <button type="button" className="btn btn-outline btn-sm" onClick={() => setReviewing(true)}>
-            <Sparkles size={15} /> Review with AI
+            <DawnOrb size={18} /> Review with Dawn
           </button>
         )}
       </div>
@@ -326,6 +327,7 @@ export default function QuestionsTab() {
 
       <ConfirmModal
         open={Boolean(pending)}
+        label={pending?.kind === 'question' ? 'Delete question' : 'Remove option'}
         title={pending?.kind === 'question' ? `Delete question ${pending.index + 1}?` : 'Remove this option?'}
         message={
           pending?.kind === 'question'
