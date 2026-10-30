@@ -35,8 +35,9 @@ export default function QuestionsTab() {
   const locked = test.status === 'open'
   const questions = draft.questions
 
-  const setQuestion = (index, fn) =>
-    edit((d) => ({ ...d, questions: d.questions.map((q, i) => (i === index ? fn(q) : q)) }))
+  // key: typing in one field merges into one undo step (editorHistory.js).
+  const setQuestion = (index, fn, key) =>
+    edit((d) => ({ ...d, questions: d.questions.map((q, i) => (i === index ? fn(q) : q)) }), key)
 
   function addQuestion() {
     edit((d) => ({ ...d, questions: [...d.questions, blankQuestion()] }))
@@ -168,7 +169,7 @@ export default function QuestionsTab() {
                 rows={Math.min(6, Math.max(1, Math.ceil(q.question.length / 70)))}
                 onChange={(e) => {
                   const question = e.target.value
-                  setQuestion(index, (x) => ({ ...x, question }))
+                  setQuestion(index, (x) => ({ ...x, question }), `q:${q.id}:text`)
                 }}
                 placeholder="Type the question"
                 aria-label={`Question ${index + 1}`}
@@ -195,7 +196,11 @@ export default function QuestionsTab() {
                       value={option}
                       onChange={(e) => {
                         const text = e.target.value
-                        setQuestion(index, (x) => ({ ...x, options: x.options.map((o, i) => (i === oIndex ? text : o)) }))
+                        setQuestion(
+                          index,
+                          (x) => ({ ...x, options: x.options.map((o, i) => (i === oIndex ? text : o)) }),
+                          `q:${q.id}:o${oIndex}`,
+                        )
                       }}
                       placeholder={`Option ${String.fromCharCode(65 + oIndex)}`}
                       aria-label={`Question ${index + 1}, option ${String.fromCharCode(65 + oIndex)}`}
@@ -237,7 +242,7 @@ export default function QuestionsTab() {
                   rows={2}
                   onChange={(e) => {
                     const explanation = e.target.value
-                    setQuestion(index, (x) => ({ ...x, explanation }))
+                    setQuestion(index, (x) => ({ ...x, explanation }), `q:${q.id}:why`)
                   }}
                   placeholder="Why the answer is right - handy when you go over the test with candidates"
                 />

@@ -935,3 +935,58 @@
   font-weight: 600;
   white-space: nowrap;
 }
+
+/* Undo / Redo in the top bar (phones use the ⋮ menu's copies). */
+.test-history {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.test-history .icon-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+@media (max-width: 600px) {
+  .test-history {
+    display: none;
+  }
+}
+
+/* Keyboard shortcuts window. */
+.shortcuts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.shortcut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--win-card);
+}
+
+.shortcut dt {
+  white-space: nowrap;
+}
+
+.shortcut dd {
+  margin: 0;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.shortcut kbd {
+  display: inline-block;
+  min-width: 26px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--win-field);
+  font: 600 12px/1.6 var(--font);
+  text-align: center;
+}

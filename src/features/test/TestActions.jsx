@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Copy, Download, Link2, MoreVertical, Send, Square, Trash2 } from 'lucide-react'
+import { Copy, Download, Keyboard, Link2, MoreVertical, Redo2, Send, Square, Trash2, Undo2 } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import MenuButton from '../../lib/MenuButton.jsx'
 import NoticeDialog from '../../lib/NoticeDialog.jsx'
@@ -15,7 +15,14 @@ import {
   updateTestFields,
 } from '../../services/firestore.js'
 import { useAuth } from '../auth/useAuth.js'
+import ShortcutsDialog from './ShortcutsDialog.jsx'
 import { useTestEditor } from './testContext.js'
+
+// Text boxes keep their own undo for typing (as in PeraForm): the test's
+// Undo/Redo only takes Ctrl+Z when focus is somewhere else.
+function isTextField(el) {
+  return el?.matches?.('input, textarea, select, [contenteditable="true"]')
+}
 
 function fileBase(title) {
   return (title || 'untitled-test').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'test'
@@ -23,14 +30,17 @@ function fileBase(title) {
 
 // Top-bar actions for the open test: status, Publish / Close, copy link, more.
 export default function TestActions() {
-  const { test, draft, flush } = useTestEditor()
+  const { test, draft, flush, undo, redo, canUndo, canRedo } = useTestEditor()
   const { user } = useAuth()
   const navigate = useNavigate()
   const [toast, showToast] = useToast()
   const [problems, setProblems] = useState([])
   const [confirm, setConfirm] = useState(null) // 'close' | 'delete'
   const [busy, setBusy] = useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const status = test.status ?? 'draft'
+  // While a test is open its questions are locked, so history is too.
+  const historyOn = status !== 'open'
 
   // A one-off note from the page that sent us here (e.g. "Made with AI ·
   // used 1.3 credits"), shown once and then cleared from history.
@@ -43,6 +53,23 @@ export default function TestActions() {
   }, [notice, showToast, navigate, location.pathname])
 
   const link = `${window.location.origin}/test/${test.id}`
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!(e.ctrlKey || e.metaKey)) return
+      if (e.key === '/') {
+        e.preventDefault()
+        setShortcutsOpen(true)
+        return
+      }
+      if (e.key.toLowerCase() !== 'z' || isTextField(e.target) || !historyOn) return
+      e.preventDefault()
+      if (e.shiftKey) redo()
+      else undo()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [undo, redo, historyOn])
 
   async function publish() {
     const found = testProblems(draft)
@@ -127,6 +154,28 @@ export default function TestActions() {
       <span className={`status status-${status}`} title="Status">
         {STATUS_LABELS[status]}
       </span>
+      <span className="test-history" role="group" aria-label="Undo and redo">
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={undo}
+          disabled={!canUndo || !historyOn}
+          aria-label="Undo"
+          title={historyOn ? 'Undo (Ctrl+Z)' : 'Close the test to make changes'}
+        >
+          <Undo2 size={18} />
+        </button>
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={redo}
+          disabled={!canRedo || !historyOn}
+          aria-label="Redo"
+          title={historyOn ? 'Redo (Ctrl+Shift+Z)' : 'Close the test to make changes'}
+        >
+          <Redo2 size={18} />
+        </button>
+      </span>
       <button
         type="button"
         className="icon-btn test-copy-link"
@@ -161,13 +210,17 @@ export default function TestActions() {
         icon={<MoreVertical size={18} />}
         label="More"
         items={[
+          ...(historyOn && canUndo ? [{ label: 'Undo', icon: Undo2, onSelect: undo }] : []),
+          ...(historyOn && canRedo ? [{ label: 'Redo', icon: Redo2, onSelect: redo }] : []),
           { label: 'Make a copy', icon: Copy, onSelect: makeCopy },
           { label: 'Download questions (CSV)', icon: Download, onSelect: () => download('csv') },
           { label: 'Download questions (JSON)', icon: Download, onSelect: () => download('json') },
+          { label: 'Keyboard shortcuts', icon: Keyboard, onSelect: () => setShortcutsOpen(true) },
           { label: 'Delete test', icon: Trash2, danger: true, onSelect: () => setConfirm('delete') },
         ]}
       />
 
+      <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <NoticeDialog
         open={problems.length > 0}
         title="Not ready to open yet"

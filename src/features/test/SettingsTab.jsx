@@ -56,7 +56,7 @@ export default function SettingsTab() {
             disabled={status === 'open'}
             onChange={(e) => {
               const minutes = e.target.value === '' ? '' : Math.max(0, Math.round(Number(e.target.value)))
-              edit((d) => ({ ...d, minutes }))
+              edit((d) => ({ ...d, minutes }), 'minutes')
             }}
           />
         </label>

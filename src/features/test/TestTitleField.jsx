@@ -35,7 +35,7 @@ export default function TestTitleField() {
         value={draft.displayName}
         onChange={(e) => {
           const displayName = e.target.value
-          edit((d) => ({ ...d, displayName }))
+          edit((d) => ({ ...d, displayName }), 'title')
         }}
         placeholder="Untitled test"
         aria-label="Test title"

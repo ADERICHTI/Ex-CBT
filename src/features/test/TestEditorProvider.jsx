@@ -1,23 +1,29 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { getAnswerKey, joinQuestions, saveTestDraft, watchTest } from '../../services/firestore.js'
 import { useAuth } from '../auth/useAuth.js'
+import { historyReducer, initialHistory } from './editorHistory.js'
 import { TestContext } from './testContext.js'
 
 const AUTOSAVE_MS = 800
 const RETRY_MS = 5000
 
 // Loads one test live and owns its editing session: the draft (title, time
-// limit, questions with their correct answers) and a debounced autosave.
+// limit, questions with their correct answers), undo/redo (editorHistory.js)
+// and a debounced autosave.
 // The person's own edits are what get saved - nothing is changed for them.
 export default function TestEditorProvider({ testId, children }) {
   const { user } = useAuth()
   const [test, setTest] = useState(null)
-  const [draft, setDraft] = useState(null)
+  const [history, dispatch] = useReducer(historyReducer, initialHistory)
+  const { draft, version } = history
   const [loadError, setLoadError] = useState(null)
   const [saveState, setSaveState] = useState('saved')
-  const [version, setVersion] = useState(0)
   const savedVersion = useRef(0)
   const draftRef = useRef(null)
+  // Autosave reads the latest draft from here (after the render it's in).
+  useEffect(() => {
+    draftRef.current = draft
+  }, [draft])
   const started = useRef(false)
 
   useEffect(
@@ -41,8 +47,7 @@ export default function TestEditorProvider({ testId, children }) {
               minutes: data.minutes ?? 15,
               questions: joinQuestions(data.questions, key),
             }
-            draftRef.current = initial
-            setDraft(initial)
+            dispatch({ type: 'load', draft: initial })
           } catch {
             setLoadError('failed')
           }
@@ -52,14 +57,13 @@ export default function TestEditorProvider({ testId, children }) {
     [testId, user.email],
   )
 
-  const edit = useCallback((fn) => {
-    setDraft((d) => {
-      const next = fn(d)
-      draftRef.current = next
-      return next
-    })
-    setVersion((v) => v + 1)
-  }, [])
+  // edit(draft => draft, key?): typing passes a key per field so a word
+  // is one undo step; other changes (add, delete, move, Dawn) are one each.
+  const edit = useCallback((update, key) => dispatch({ type: 'edit', update, key, at: Date.now() }), [])
+  const undo = useCallback(() => dispatch({ type: 'undo' }), [])
+  const redo = useCallback(() => dispatch({ type: 'redo' }), [])
+  const canUndo = history.past.length > 0
+  const canRedo = history.future.length > 0
 
   const save = useCallback(async () => {
     const at = version
@@ -94,7 +98,7 @@ export default function TestEditorProvider({ testId, children }) {
   const flush = useCallback(async () => (version === savedVersion.current ? true : save()), [version, save])
 
   return (
-    <TestContext.Provider value={{ test, draft, edit, saveState, flush, loadError }}>
+    <TestContext.Provider value={{ test, draft, edit, undo, redo, canUndo, canRedo, saveState, flush, loadError }}>
       {children}
     </TestContext.Provider>
   )
