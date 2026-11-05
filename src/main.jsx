@@ -19,6 +19,7 @@ import QuestionsTab from './features/test/QuestionsTab.jsx'
 import CandidatesTab from './features/test/CandidatesTab.jsx'
 import ResultsTab from './features/test/ResultsTab.jsx'
 import SettingsTab from './features/test/SettingsTab.jsx'
+import PrintTest from './features/test/PrintTest.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -54,6 +55,7 @@ createRoot(document.getElementById('root')).render(
                 <Route index element={<DashboardPage />} />
               </Route>
               <Route path="/tests/:testId/preview" element={<TestInterface preview />} />
+              <Route path="/tests/:testId/print" element={<PrintTest />} />
               <Route path="/tests/:testId" element={<TestLayout />}>
                 <Route index element={<Navigate to="questions" replace />} />
                 <Route path="questions" element={<QuestionsTab />} />

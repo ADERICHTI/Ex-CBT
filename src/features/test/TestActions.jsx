@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Copy, Download, Eye, Keyboard, Link2, MoreVertical, Redo2, Send, Square, Trash2, Undo2 } from 'lucide-react'
+import { Copy, Download, Eye, Keyboard, Link2, MoreVertical, Printer, Redo2, Send, Square, Trash2, Undo2 } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import MenuButton from '../../lib/MenuButton.jsx'
 import NoticeDialog from '../../lib/NoticeDialog.jsx'
@@ -58,6 +58,11 @@ export default function TestActions() {
   async function openPreview() {
     await flush()
     window.open(`/tests/${test.id}/preview`, '_blank', 'noopener')
+  }
+
+  async function openPrint() {
+    await flush()
+    window.open(`/tests/${test.id}/print`, '_blank', 'noopener')
   }
 
   useEffect(() => {
@@ -228,6 +233,7 @@ export default function TestActions() {
           ...(historyOn && canUndo ? [{ label: 'Undo', icon: Undo2, onSelect: undo }] : []),
           ...(historyOn && canRedo ? [{ label: 'Redo', icon: Redo2, onSelect: redo }] : []),
           { label: 'Preview as a candidate', icon: Eye, onSelect: openPreview },
+          { label: 'Print', icon: Printer, onSelect: openPrint },
           { label: 'Make a copy', icon: Copy, onSelect: makeCopy },
           { label: 'Download questions (CSV)', icon: Download, onSelect: () => download('csv') },
           { label: 'Download questions (JSON)', icon: Download, onSelect: () => download('json') },
