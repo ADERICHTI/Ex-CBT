@@ -7,7 +7,7 @@ import Spinner from '../../lib/Spinner.jsx'
 import { createFolder, deleteFolder, moveToFolder, renameFolder, setStarred, useOrganize } from '../../lib/organize.js'
 import PromptDialog from '../../lib/PromptDialog.jsx'
 import { useToast } from '../../lib/useToast.jsx'
-import { createTest, deleteTest, STATUS_LABELS } from '../../services/firestore.js'
+import { createTest, deleteTest, saveRoster, STATUS_LABELS } from '../../services/firestore.js'
 import CreateTestDialog from '../ai/CreateTestDialog.jsx'
 import DawnOrb from '../ai/DawnOrb.jsx'
 import { useAuth } from '../auth/useAuth.js'
@@ -104,6 +104,9 @@ export default function DashboardPage() {
     setActionError('')
     try {
       const id = await createTest(user.email, content)
+      if (Array.isArray(content.roster) && content.roster.length > 0) {
+        await saveRoster(id, user.email, content.roster)
+      }
       navigate(`/tests/${id}/questions`)
     } catch {
       setActionError('Couldn’t create the test. Check your connection and try again.')

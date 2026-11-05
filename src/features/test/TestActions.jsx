@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Copy, Download, Eye, Keyboard, Link2, MoreVertical, Printer, QrCode as QrCodeIcon, Redo2, RotateCcw, Send, Square, Trash2, Undo2 } from 'lucide-react'
+import { Copy, Download, Eye, FileJson, Keyboard, Link2, MoreVertical, Printer, QrCode as QrCodeIcon, Redo2, RotateCcw, Send, Square, Trash2, Undo2 } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import MenuButton from '../../lib/MenuButton.jsx'
 import NoticeDialog from '../../lib/NoticeDialog.jsx'
@@ -15,6 +15,7 @@ import {
   updateTestFields,
 } from '../../services/firestore.js'
 import { useAuth } from '../auth/useAuth.js'
+import DownloadHypercbtDialog from './DownloadHypercbtDialog.jsx'
 import QrCodeDialog from './QrCodeDialog.jsx'
 import ShortcutsDialog from './ShortcutsDialog.jsx'
 import { useTestEditor } from './testContext.js'
@@ -40,6 +41,7 @@ export default function TestActions() {
   const [busy, setBusy] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [qrOpen, setQrOpen] = useState(false)
+  const [downloadHypercbtOpen, setDownloadHypercbtOpen] = useState(false)
   const status = test.status ?? 'draft'
   // While a test is open its questions are locked, so history is too.
   const historyOn = status !== 'open'
@@ -252,6 +254,7 @@ export default function TestActions() {
             : []),
           { label: 'Make a copy', icon: Copy, onSelect: makeCopy },
           { label: 'Show QR code', icon: QrCodeIcon, onSelect: () => setQrOpen(true) },
+          { label: 'Download as HyperCBT file', icon: FileJson, onSelect: () => setDownloadHypercbtOpen(true) },
           { label: 'Download questions (CSV)', icon: Download, onSelect: () => download('csv') },
           { label: 'Download questions (JSON)', icon: Download, onSelect: () => download('json') },
           { label: 'Keyboard shortcuts', icon: Keyboard, onSelect: () => setShortcutsOpen(true) },
@@ -259,6 +262,13 @@ export default function TestActions() {
         ]}
       />
 
+      <DownloadHypercbtDialog
+        open={downloadHypercbtOpen}
+        onClose={() => setDownloadHypercbtOpen(false)}
+        test={test}
+        draft={draft}
+        onToast={showToast}
+      />
       <QrCodeDialog
         open={qrOpen}
         onClose={() => setQrOpen(false)}
