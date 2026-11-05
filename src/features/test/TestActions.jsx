@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Copy, Download, Keyboard, Link2, MoreVertical, Redo2, Send, Square, Trash2, Undo2 } from 'lucide-react'
+import { Copy, Download, Eye, Keyboard, Link2, MoreVertical, Redo2, Send, Square, Trash2, Undo2 } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import MenuButton from '../../lib/MenuButton.jsx'
 import NoticeDialog from '../../lib/NoticeDialog.jsx'
@@ -53,6 +53,12 @@ export default function TestActions() {
   }, [notice, showToast, navigate, location.pathname])
 
   const link = `${window.location.origin}/test/${test.id}`
+
+  // Saves first, so the preview shows exactly what's in the editor.
+  async function openPreview() {
+    await flush()
+    window.open(`/tests/${test.id}/preview`, '_blank', 'noopener')
+  }
 
   useEffect(() => {
     const onKey = (e) => {
@@ -178,6 +184,15 @@ export default function TestActions() {
       </span>
       <button
         type="button"
+        className="icon-btn test-preview"
+        onClick={openPreview}
+        aria-label="Preview as a candidate"
+        title="Preview as a candidate"
+      >
+        <Eye size={18} />
+      </button>
+      <button
+        type="button"
         className="icon-btn test-copy-link"
         onClick={copyLink}
         aria-label="Copy test link"
@@ -212,6 +227,7 @@ export default function TestActions() {
         items={[
           ...(historyOn && canUndo ? [{ label: 'Undo', icon: Undo2, onSelect: undo }] : []),
           ...(historyOn && canRedo ? [{ label: 'Redo', icon: Redo2, onSelect: redo }] : []),
+          { label: 'Preview as a candidate', icon: Eye, onSelect: openPreview },
           { label: 'Make a copy', icon: Copy, onSelect: makeCopy },
           { label: 'Download questions (CSV)', icon: Download, onSelect: () => download('csv') },
           { label: 'Download questions (JSON)', icon: Download, onSelect: () => download('json') },

@@ -395,3 +395,45 @@
     position: static;
   }
 }
+
+/* Preview as a candidate (TestInterface preview). */
+.preview-bar {
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.preview-result {
+  max-width: 760px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.preview-rows {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.preview-rows li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+  background: var(--fill);
+}
+
+.preview-rows li.is-right span {
+  color: var(--success);
+}
+
+.preview-rows li.is-wrong span {
+  color: var(--danger);
+}

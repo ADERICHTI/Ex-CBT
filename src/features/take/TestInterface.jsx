@@ -1,15 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Clock, LogOut, Send, TriangleAlert, X } from 'lucide-react';
 import { useTestSession } from '../../hooks/useTestSession';
-import { getSubmission, getTest, submitTestAttempt } from '../../services/firestore';
+import { getAnswerKey, getSubmission, getTest, submitTestAttempt } from '../../services/firestore';
 import Spinner from '../../lib/Spinner.jsx';
 import ConfirmModal from '../../lib/ConfirmModal.jsx';
 import LogoMark from '../../lib/LogoMark.jsx';
 import { useToast } from '../../lib/useToast.jsx';
 import './take.css';
 
-export default function TestInterface() {
+// The test as a candidate sits it. With `preview` (the owner's "Preview as
+// a candidate", /tests/:testId/preview): any status, no attempt, nothing
+// saved and no Student ID used; Submit marks it here (the owner can read the
+// answer key) and shows the result; strict mode is paused.
+export default function TestInterface({ preview = false }) {
+  const navigate = useNavigate();
   const [toast, showToast] = useToast();
+  const [answerKey, setAnswerKey] = useState(null); // preview only
+  const [result, setResult] = useState(null); // preview only: { score, rows }
   // The "sid" URL param holds the attempt/submission doc id (the normalized
   // student id), set by StartTest.jsx when it creates the attempt.
   const { testId, studentId: attemptId, goTo } = useTestSession();
@@ -40,6 +48,19 @@ export default function TestInterface() {
     let cancelled = false;
 
     async function load() {
+      if (preview) {
+        const [foundTest, key] = await Promise.all([getTest(testId), getAnswerKey(testId)]);
+        if (cancelled) return;
+        if (!foundTest) {
+          navigate('/', { replace: true });
+          return;
+        }
+        setTest(foundTest);
+        setAnswerKey(key.answers ?? []);
+        setTimeRemaining(foundTest.minutes * 60);
+        setStatus('ready');
+        return;
+      }
       if (!testId || !attemptId) {
         goTo('', {}, { replace: true });
         return;
@@ -96,7 +117,7 @@ export default function TestInterface() {
   // Strict mode: leaving the tab or exiting fullscreen starts a 3-second
   // countdown that auto-submits unless the student returns in time.
   useEffect(() => {
-    if (status !== 'ready' || !test?.strictMode) return;
+    if (status !== 'ready' || !test?.strictMode || preview) return;
 
     function startCountdown() {
       if (leaveIntervalRef.current) return;
@@ -140,7 +161,7 @@ export default function TestInterface() {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       cancelCountdown();
     };
-  }, [status, test?.strictMode]);
+  }, [status, test?.strictMode, preview]);
 
   if (status !== 'ready') return <Spinner fill="page" label="Loading your test" />;
 
@@ -151,6 +172,19 @@ export default function TestInterface() {
   // student's raw picks, index-aligned with `questions`.
   async function handleSubmit() {
     if (submitting) return;
+    if (preview) {
+      // Marked here, the same way the server does (case and spaces ignored).
+      clearInterval(timerRef.current);
+      const norm = (v) => String(v ?? '').trim().toLowerCase();
+      const rows = questions.map((q, i) => {
+        const picked = userAnswers[i] ?? null;
+        const correct = answerKey[i] ?? '';
+        return { q, picked, correct, right: Boolean(picked) && norm(picked) === norm(correct) };
+      });
+      setShowModal(false);
+      setResult({ score: rows.filter((r) => r.right).length, rows });
+      return;
+    }
     setSubmitting(true);
     setSubmitError('');
     clearInterval(timerRef.current);
@@ -179,7 +213,43 @@ export default function TestInterface() {
   function confirmExit() {
     setShowExitModal(false);
     clearInterval(timerRef.current);
-    goTo('');
+    if (preview) navigate(`/tests/${testId}/questions`);
+    else goTo('');
+  }
+
+  if (result) {
+    return (
+      <div className="attempt">
+        <p className="preview-bar" role="status">Preview · nothing was saved</p>
+        <section className="take-card preview-result">
+          <h1>
+            {result.score} / {questions.length} correct
+          </h1>
+          <p className="take-muted">This is what a candidate would score. Their score is saved only when they take the real test.</p>
+          <ol className="preview-rows">
+            {result.rows.map((r, i) => (
+              <li key={i} className={r.right ? 'is-right' : 'is-wrong'}>
+                <strong>{r.q.question}</strong>
+                <span>
+                  {r.right ? '✓ ' : '✗ '}
+                  {r.picked ? `You chose “${r.picked}”` : 'No answer'}
+                  {!r.right && r.correct && ` · correct: “${r.correct}”`}
+                  {!r.correct && ' · no correct answer is marked yet'}
+                </span>
+              </li>
+            ))}
+          </ol>
+          <div className="attempt-actions">
+            <button type="button" className="btn btn-outline" onClick={() => window.location.reload()}>
+              Try again
+            </button>
+            <button type="button" className="btn btn-primary" onClick={() => navigate(`/tests/${testId}/questions`)}>
+              Back to the test
+            </button>
+          </div>
+        </section>
+      </div>
+    );
   }
 
   function selectOption(option) {
@@ -210,9 +280,15 @@ export default function TestInterface() {
 
   return (
     <div className="attempt">
+      {preview && (
+        <p className="preview-bar" role="status">
+          Preview · nothing is saved and no attempt is used
+          {test.strictMode && ' · strict mode is paused in preview'}
+        </p>
+      )}
       <header className="attempt-bar">
         <div className="attempt-title">
-          {!test.strictMode && (
+          {(!test.strictMode || preview) && (
             <button type="button" className="icon-btn" onClick={handleExit} aria-label="Leave test" title="Leave test">
               <X size={18} />
             </button>

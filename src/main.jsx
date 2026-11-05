@@ -53,6 +53,7 @@ createRoot(document.getElementById('root')).render(
               <Route element={<AppShell search />}>
                 <Route index element={<DashboardPage />} />
               </Route>
+              <Route path="/tests/:testId/preview" element={<TestInterface preview />} />
               <Route path="/tests/:testId" element={<TestLayout />}>
                 <Route index element={<Navigate to="questions" replace />} />
                 <Route path="questions" element={<QuestionsTab />} />
