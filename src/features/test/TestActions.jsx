@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Copy, Download, Eye, Keyboard, Link2, MoreVertical, Printer, QrCode as QrCodeIcon, Redo2, Send, Square, Trash2, Undo2 } from 'lucide-react'
+import { Copy, Download, Eye, Keyboard, Link2, MoreVertical, Printer, QrCode as QrCodeIcon, Redo2, RotateCcw, Send, Square, Trash2, Undo2 } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import MenuButton from '../../lib/MenuButton.jsx'
 import NoticeDialog from '../../lib/NoticeDialog.jsx'
@@ -152,10 +152,21 @@ export default function TestActions() {
         navigate('/')
         return
       }
+      if (confirm === 'unpublish') {
+        await updateTestFields(test.id, user.email, { status: 'draft' })
+        showToast('Test unpublished — back to Draft')
+        return
+      }
       await updateTestFields(test.id, user.email, { status: 'closed' })
       showToast('Test closed - new candidates can’t start')
     } catch {
-      showToast(confirm === 'delete' ? 'Couldn’t delete the test. Please try again.' : 'Couldn’t close the test. Please try again.')
+      showToast(
+        confirm === 'delete'
+          ? 'Couldn’t delete the test. Please try again.'
+          : confirm === 'unpublish'
+            ? 'Couldn’t unpublish the test. Please try again.'
+            : 'Couldn’t close the test. Please try again.',
+      )
     } finally {
       setBusy(false)
       setConfirm(null)
@@ -236,6 +247,9 @@ export default function TestActions() {
           ...(historyOn && canRedo ? [{ label: 'Redo', icon: Redo2, onSelect: redo }] : []),
           { label: 'Preview as a candidate', icon: Eye, onSelect: openPreview },
           { label: 'Print', icon: Printer, onSelect: openPrint },
+          ...(status === 'open' || status === 'closed'
+            ? [{ label: 'Unpublish', icon: RotateCcw, onSelect: () => setConfirm('unpublish') }]
+            : []),
           { label: 'Make a copy', icon: Copy, onSelect: makeCopy },
           { label: 'Show QR code', icon: QrCodeIcon, onSelect: () => setQrOpen(true) },
           { label: 'Download questions (CSV)', icon: Download, onSelect: () => download('csv') },
@@ -269,6 +283,19 @@ export default function TestActions() {
         title="Close this test?"
         message="New candidates won’t be able to start it. Anyone already taking it can still submit. You can reopen it any time."
         confirmLabel="Close test"
+        tone="primary"
+        busy={busy}
+        onConfirm={onConfirm}
+        onCancel={() => setConfirm(null)}
+      />
+      <ConfirmModal
+        open={confirm === 'unpublish'}
+        label="Unpublish test"
+        context={draft.displayName || 'Untitled test'}
+        icon={RotateCcw}
+        title="Unpublish this test?"
+        message="Candidates can't open it until you publish again. Results stay."
+        confirmLabel="Unpublish"
         tone="primary"
         busy={busy}
         onConfirm={onConfirm}
