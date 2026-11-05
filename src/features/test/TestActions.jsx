@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Copy, Download, Eye, Keyboard, Link2, MoreVertical, Printer, Redo2, Send, Square, Trash2, Undo2 } from 'lucide-react'
+import { Copy, Download, Eye, Keyboard, Link2, MoreVertical, Printer, QrCode as QrCodeIcon, Redo2, Send, Square, Trash2, Undo2 } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import MenuButton from '../../lib/MenuButton.jsx'
 import NoticeDialog from '../../lib/NoticeDialog.jsx'
@@ -15,6 +15,7 @@ import {
   updateTestFields,
 } from '../../services/firestore.js'
 import { useAuth } from '../auth/useAuth.js'
+import QrCodeDialog from './QrCodeDialog.jsx'
 import ShortcutsDialog from './ShortcutsDialog.jsx'
 import { useTestEditor } from './testContext.js'
 
@@ -38,6 +39,7 @@ export default function TestActions() {
   const [confirm, setConfirm] = useState(null) // 'close' | 'delete'
   const [busy, setBusy] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const [qrOpen, setQrOpen] = useState(false)
   const status = test.status ?? 'draft'
   // While a test is open its questions are locked, so history is too.
   const historyOn = status !== 'open'
@@ -235,6 +237,7 @@ export default function TestActions() {
           { label: 'Preview as a candidate', icon: Eye, onSelect: openPreview },
           { label: 'Print', icon: Printer, onSelect: openPrint },
           { label: 'Make a copy', icon: Copy, onSelect: makeCopy },
+          { label: 'Show QR code', icon: QrCodeIcon, onSelect: () => setQrOpen(true) },
           { label: 'Download questions (CSV)', icon: Download, onSelect: () => download('csv') },
           { label: 'Download questions (JSON)', icon: Download, onSelect: () => download('json') },
           { label: 'Keyboard shortcuts', icon: Keyboard, onSelect: () => setShortcutsOpen(true) },
@@ -242,6 +245,14 @@ export default function TestActions() {
         ]}
       />
 
+      <QrCodeDialog
+        open={qrOpen}
+        onClose={() => setQrOpen(false)}
+        testId={test.id}
+        testTitle={draft.displayName}
+        status={status}
+        onToast={showToast}
+      />
       <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <NoticeDialog
         open={problems.length > 0}
