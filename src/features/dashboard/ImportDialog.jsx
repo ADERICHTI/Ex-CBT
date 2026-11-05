@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Download, Upload } from 'lucide-react'
 import QtWindow, { QtActions } from '../../lib/QtWindow.jsx'
 import { CSV_TEMPLATE, JSON_TEMPLATE, downloadCsv, downloadJson, parseQuestionsFile } from '../../services/csv.js'
-import { newQuestionId } from '../../services/firestore.js'
+import { DIFFICULTIES, newQuestionId } from '../../services/firestore.js'
 import DawnOrb from '../ai/DawnOrb.jsx'
 import IdeaArt from '../ai/IdeaArt.jsx'
 
@@ -109,20 +109,31 @@ export default function ImportDialog({ open, onClose, onCreate, onDawn, busy }) 
 
   function create() {
     if (isHypercbt) {
-      const questions = file.data.questions.map((q) => ({
-        id: newQuestionId(),
-        question: q.question,
-        options: Array.isArray(q.options) ? [...q.options] : [],
-        correct: typeof q.correct === 'number' ? q.correct : null,
-        explanation: q.explanation || '',
-        difficulty: q.difficulty || '',
-      }))
+      // Files can be hand-edited: keep only text, and answers that point at an option.
+      const text = (v) => (typeof v === 'string' || typeof v === 'number' ? String(v) : '')
+      const questions = file.data.questions.map((q) => {
+        const options = Array.isArray(q?.options) ? q.options.map(text) : []
+        const correct = Number.isInteger(q?.correct) && q.correct >= 0 && q.correct < options.length ? q.correct : null
+        return {
+          id: newQuestionId(),
+          question: text(q?.question),
+          options,
+          correct,
+          explanation: text(q?.explanation),
+          difficulty: DIFFICULTIES.includes(q?.difficulty) ? q.difficulty : '',
+        }
+      })
+      const roster = Array.isArray(file.data.roster)
+        ? file.data.roster
+            .map((u) => ({ name: text(u?.name).trim(), studentId: text(u?.studentId).trim() }))
+            .filter((u) => u.name || u.studentId)
+        : undefined
       onCreate({
         displayName: file.data.displayName || file.name,
         minutes: Number(file.data.minutes) || 15,
         strictMode: Boolean(file.data.strictMode),
         questions,
-        roster: Array.isArray(file.data.roster) ? file.data.roster : undefined,
+        roster,
       })
       return
     }
