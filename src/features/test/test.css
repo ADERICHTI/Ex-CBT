@@ -996,3 +996,10 @@
     display: none;
   }
 }
+
+/* Edit / Review with Dawn, side by side; they wrap on phones. */
+.questions-ai {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
