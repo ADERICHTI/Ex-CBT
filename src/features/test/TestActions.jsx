@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Copy, Download, Eye, FileJson, Keyboard, Link2, MoreVertical, Palette, Printer, QrCode as QrCodeIcon, Redo2, RotateCcw, Send, Square, Trash2, Undo2, UserPlus } from 'lucide-react'
+import { ChevronDown, Copy, Download, Eye, FileJson, Keyboard, Link2, MoreVertical, Palette, Printer, QrCode as QrCodeIcon, Redo2, RotateCcw, Send, Square, Trash2, Undo2, UserPlus } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import ShareDialog from './ShareDialog.jsx'
 import ThemePanel from './ThemePanel.jsx'
@@ -237,15 +237,6 @@ export default function TestActions() {
       </button>
       <button
         type="button"
-        className="icon-btn"
-        onClick={() => setShareOpen(true)}
-        aria-label="Share"
-        title="Share"
-      >
-        <UserPlus size={18} />
-      </button>
-      <button
-        type="button"
         className="icon-btn test-copy-link"
         onClick={copyLink}
         aria-label="Copy test link"
@@ -253,26 +244,38 @@ export default function TestActions() {
       >
         <Link2 size={18} />
       </button>
-      {status === 'open' ? (
-        <button
-          type="button"
-          className="btn btn-outline test-publish test-close"
-          onClick={() => setConfirm('close')}
-          disabled={busy}
-          aria-label="Close test"
-        >
-          <Square size={14} /> <span className="test-publish-label">Close</span>
+      <button
+        type="button"
+        className="icon-btn"
+        onClick={() => setShareOpen(true)}
+        aria-label="Share"
+        title="Share"
+      >
+        <UserPlus size={18} />
+      </button>
+      {/* As in PeraForm: Publish on a draft; then a "Published ▾" /
+          "Closed ▾" pill with the status changes (each asks first). */}
+      {status === 'draft' ? (
+        <button type="button" className="btn btn-primary publish-btn" onClick={publish} disabled={busy}>
+          Publish
         </button>
       ) : (
-        <button
-          type="button"
-          className="btn btn-primary test-publish"
-          onClick={publish}
-          disabled={busy}
-          aria-label={status === 'closed' ? 'Reopen test' : 'Publish test'}
-        >
-          <Send size={15} /> <span className="test-publish-label">{status === 'closed' ? 'Reopen' : 'Publish'}</span>
-        </button>
+        <MenuButton
+          className="status-menu"
+          label={status === 'open' ? 'Published - change status' : 'Closed - change status'}
+          icon={
+            <span className={`status-pill status-pill-${status}`}>
+              {status === 'open' ? 'Published' : 'Closed'}
+              <ChevronDown size={14} />
+            </span>
+          }
+          items={[
+            status === 'open'
+              ? { label: 'Close (no new candidates)', icon: Square, onSelect: () => setConfirm('close') }
+              : { label: 'Reopen (candidates can start again)', icon: Send, onSelect: publish },
+            { label: 'Unpublish', icon: RotateCcw, danger: true, onSelect: () => setConfirm('unpublish') },
+          ]}
+        />
       )}
       <MenuButton
         icon={<MoreVertical size={18} />}
@@ -284,9 +287,6 @@ export default function TestActions() {
           { label: 'Theme', icon: Palette, onSelect: () => setThemeOpen(true) },
           { label: 'Preview as a candidate', icon: Eye, onSelect: openPreview },
           { label: 'Print', icon: Printer, onSelect: openPrint },
-          ...(status === 'open' || status === 'closed'
-            ? [{ label: 'Unpublish', icon: RotateCcw, onSelect: () => setConfirm('unpublish') }]
-            : []),
           { label: 'Share', icon: UserPlus, onSelect: () => setShareOpen(true) },
           { label: 'Make a copy', icon: Copy, onSelect: makeCopy },
           { label: 'Show QR code', icon: QrCodeIcon, onSelect: () => setQrOpen(true) },

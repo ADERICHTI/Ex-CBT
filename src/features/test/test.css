@@ -55,16 +55,6 @@
   gap: 4px;
 }
 
-.test-actions .status {
-  margin-right: 4px;
-}
-
-.test-publish {
-  height: 40px;
-  padding: 0 16px;
-  font-size: 14px;
-}
-
 .test-missing {
   display: flex;
   flex-direction: column;
@@ -675,16 +665,10 @@
 }
 
 /* Narrow phones: the top bar's first row must fit (the link is also in
-   Settings; Publish/Close keep their icon and accessible name). */
+   Settings and the Share window). */
 @media (max-width: 480px) {
-  .test-copy-link,
-  .test-publish-label {
+  .test-copy-link {
     display: none;
-  }
-
-  .test-publish {
-    width: 40px;
-    padding: 0;
   }
 }
 
@@ -1054,17 +1038,38 @@
   }
 }
 
-/* Close (stops candidates starting the test): a solid red button. */
-.test-close,
-.test-close:hover:not(:disabled) {
-  /* The deeper red in both modes: white text stays readable (4.8:1). */
-  border-color: #dc2626;
-  background: #dc2626;
-  color: #ffffff;
+/* Publish, and the "Published ▾" / "Closed ▾" pill (as in PeraForm). */
+.publish-btn {
+  height: 36px;
+  margin: 0 6px;
+  padding: 0 18px;
 }
 
-.test-close:hover:not(:disabled) {
-  filter: brightness(1.08);
+.status-menu > .icon-btn {
+  width: auto;
+  margin: 0 6px;
+  padding: 0;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px 0 16px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-pill-open {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.status-pill-closed {
+  background: var(--fill-strong);
+  color: var(--text);
 }
 
 /* Results → Release scores bar. */
