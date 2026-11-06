@@ -310,12 +310,15 @@
 
 .attempt-nav-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  /* Fixed columns, so each number stays a true circle at any width. */
+  grid-template-columns: repeat(auto-fill, 40px);
   gap: 8px;
 }
 
 .qnav {
-  height: 36px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: 1px solid var(--line);
   border-radius: 50%;
   background: var(--bg);
@@ -397,14 +400,6 @@
 }
 
 @media (max-width: 480px) {
-  .attempt-nav-grid {
-    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-  }
-
-  .qnav {
-    height: 40px;
-  }
-
   .attempt-timer,
   .attempt-count {
     height: 36px;
