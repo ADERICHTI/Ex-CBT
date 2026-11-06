@@ -133,7 +133,13 @@ export function watchMyTests(email, uid, onChange, onError) {
         lists[key] = snap.docs.map(toTest)
         emit()
       },
-      onError,
+      (err) => {
+        // Shared tests are extra: if that query fails (e.g. its index is
+        // still building), show your own tests anyway.
+        if (key === 'own') return onError(err)
+        lists.shared = []
+        emit()
+      },
     )
   const stops = [
     watch('own', query(collection(db, 'tests'), where('createdBy', '==', email), orderBy('updatedAt', 'desc'))),
