@@ -14,6 +14,9 @@ import Submission from './features/take/Submission.jsx'
 import AppShell from './lib/AppShell.jsx'
 import WalletProvider from './features/credits/WalletProvider.jsx'
 import DashboardPage from './features/dashboard/DashboardPage.jsx'
+import CreditsPage from './features/credits/CreditsPage.jsx'
+import CreditsReturn from './features/credits/CreditsReturn.jsx'
+import InvoicePage from './features/credits/InvoicePage.jsx'
 import TestLayout from './features/test/TestLayout.jsx'
 import QuestionsTab from './features/test/QuestionsTab.jsx'
 import CandidatesTab from './features/test/CandidatesTab.jsx'
@@ -53,6 +56,11 @@ createRoot(document.getElementById('root')).render(
               <Route element={<RequireVerified />}>
               <Route element={<AppShell search />}>
                 <Route index element={<DashboardPage />} />
+              </Route>
+              <Route element={<AppShell />}>
+                <Route path="/credits" element={<CreditsPage />} />
+                <Route path="/credits/return" element={<CreditsReturn />} />
+                <Route path="/credits/invoice/:reference" element={<InvoicePage />} />
               </Route>
               <Route path="/tests/:testId/preview" element={<TestInterface preview />} />
               <Route path="/tests/:testId/print" element={<PrintTest />} />

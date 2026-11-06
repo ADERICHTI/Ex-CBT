@@ -67,6 +67,8 @@ if (useEmulators) connectFirestoreEmulator(suiteDb, '127.0.0.1', port(8080))
 // AI runs stream progress and can take a while (the function allows 300 s).
 export const callAiRun = httpsCallable(functions, 'aiRun', { timeout: 305_000 })
 export const callEnsureWallet = httpsCallable(functions, 'ensureWallet')
+export const callCreateTopup = httpsCallable(functions, 'createTopup')
+export const callVerifyTopup = httpsCallable(functions, 'verifyTopup')
 // Sends the verify-your-email link from the Quality Tools mailbox, in
 // HyperCBT's wording (also in PeraForm's functions). 5 an hour per account.
 export const callSendVerification = httpsCallable(functions, 'sendVerification')
