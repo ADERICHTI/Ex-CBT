@@ -20,8 +20,8 @@
   --chart-bar: #b85a00; /* validated vs #fff (dataviz validator) */
   --spinner: #a9b8c3; /* the Quality Tools loading ring (lib/Spinner) */
   /* Quality Tools windows (lib/QtWindow, qt-modals-mockup.html). */
-  --win: #fbfbfd;
-  --win-card: #f2f2f6;
+  --win: color-mix(in srgb, var(--surface) 96%, var(--accent));
+  --win-card: color-mix(in srgb, var(--surface) 90%, var(--accent));
   --win-field: #ffffff;
   --win-shadow: 0 1px 2px rgb(60 60 90 / 0.06), 0 30px 70px -30px rgb(60 60 90 / 0.45);
   --win-lift: 0 14px 30px -16px rgb(60 60 90 / 0.45);
@@ -60,8 +60,8 @@
     --accent-soft: rgb(251 146 60 / 0.14);
   --chart-bar: #e8690c; /* validated vs #15161b; #fb923c is too light */
   --spinner: #5f6e7a;
-  --win: #17181e;
-  --win-card: #20222b;
+  --win: color-mix(in srgb, var(--surface) 96%, var(--accent));
+  --win-card: color-mix(in srgb, var(--surface) 90%, var(--accent));
   --win-field: #1b1c23;
   --win-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 30px 70px -30px rgb(0 0 0 / 0.85);
   --win-lift: 0 14px 30px -16px rgb(0 0 0 / 0.8);
@@ -93,8 +93,8 @@
   --accent-soft: rgb(251 146 60 / 0.14);
   --chart-bar: #e8690c; /* validated vs #15161b; #fb923c is too light */
   --spinner: #5f6e7a;
-  --win: #17181e;
-  --win-card: #20222b;
+  --win: color-mix(in srgb, var(--surface) 96%, var(--accent));
+  --win-card: color-mix(in srgb, var(--surface) 90%, var(--accent));
   --win-field: #1b1c23;
   --win-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 30px 70px -30px rgb(0 0 0 / 0.85);
   --win-lift: 0 14px 30px -16px rgb(0 0 0 / 0.8);
