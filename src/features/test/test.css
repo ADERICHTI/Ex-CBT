@@ -1057,8 +1057,9 @@
 /* Close (stops candidates starting the test): a solid red button. */
 .test-close,
 .test-close:hover:not(:disabled) {
-  border-color: var(--danger);
-  background: var(--danger);
+  /* The deeper red in both modes: white text stays readable (4.8:1). */
+  border-color: #dc2626;
+  background: #dc2626;
   color: #ffffff;
 }
 
