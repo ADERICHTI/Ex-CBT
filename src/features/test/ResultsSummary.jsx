@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AlertTriangle, ArrowDown, ArrowUp, CircleCheck, CircleSlash, Info } from 'lucide-react'
 import { MIN_FOR_GROUPS } from '../../lib/resultStats.js'
+import { difficultyStats } from '../../lib/difficultyStats.js'
 import DawnOrb from '../ai/DawnOrb.jsx'
 
 const pct = (rate) => (rate == null ? '-' : `${Math.round(rate * 100)}%`)
@@ -21,7 +22,9 @@ const FLAGS = {
 
 // Results → Summary: headline numbers, the spread of scores, and each
 // question's picks. `stats` is lib/resultStats.js → testStats().
-export default function ResultsSummary({ stats, onAnalyse }) {
+export default function ResultsSummary({ stats, difficulty, onAnalyse }) {
+  const diffStats = difficultyStats(stats, difficulty)
+
   return (
     <div className="tab-stack">
       <section className="stats" aria-label="Summary">
@@ -64,6 +67,37 @@ export default function ResultsSummary({ stats, onAnalyse }) {
         </header>
         <ScoreChart bands={stats.bands} count={stats.count} />
       </section>
+
+      {diffStats && (
+        <section className="panel" aria-label="Results by difficulty">
+          <header className="panel-head">
+            <h2>By difficulty</h2>
+          </header>
+          <ul className="opt-bars difficulty-bars">
+            {diffStats.levels.map((lvl) => (
+              <li key={lvl.key}>
+                <span className="opt-label">
+                  <strong>{lvl.label}</strong>
+                  <small className="take-muted">
+                    ({lvl.count} {lvl.count === 1 ? 'question' : 'questions'})
+                  </small>
+                </span>
+                <span className="opt-track" aria-hidden="true">
+                  <span className="opt-bar" style={{ width: `${lvl.average ?? 0}%` }} />
+                </span>
+                <span className="opt-count">{lvl.average == null ? '-' : `${lvl.average}%`}</span>
+              </li>
+            ))}
+          </ul>
+          {diffStats.surprises.length > 0 && (
+            <ul className="difficulty-surprises">
+              {diffStats.surprises.map((s, i) => (
+                <li key={i}>{s}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       {stats.count < MIN_FOR_GROUPS && (
         <p className="take-muted results-note">

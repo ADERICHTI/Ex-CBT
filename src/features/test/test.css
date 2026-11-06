@@ -905,6 +905,20 @@
   font-size: 13px;
 }
 
+.difficulty-bars {
+  padding-left: 0;
+}
+
+.difficulty-surprises {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding-left: 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
 .flag {
   display: inline-flex;
   align-items: center;

@@ -33,13 +33,24 @@ export default function ResultsTab() {
   const [releasing, setReleasing] = useState(null) // 'release' | 'hide' (asking first)
   const [releaseBusy, setReleaseBusy] = useState(false)
   const [answers, setAnswers] = useState(null) // the answer key's correct options
+  const [difficulty, setDifficulty] = useState(null) // the answer key's question difficulty list
   const total = test.questions?.length ?? 0
 
   useEffect(() => {
     let cancelled = false
     getAnswerKey(test.id).then(
-      (key) => !cancelled && setAnswers(key.answers ?? []),
-      () => !cancelled && setAnswers([]),
+      (key) => {
+        if (!cancelled) {
+          setAnswers(key.answers ?? [])
+          setDifficulty(key.difficulty ?? [])
+        }
+      },
+      () => {
+        if (!cancelled) {
+          setAnswers([])
+          setDifficulty([])
+        }
+      },
     )
     return () => {
       cancelled = true
@@ -178,7 +189,7 @@ export default function ResultsTab() {
 
       {view === 'summary' ? (
         stats ? (
-          <ResultsSummary stats={stats} onAnalyse={() => setAnalysing(true)} />
+          <ResultsSummary stats={stats} difficulty={difficulty} onAnalyse={() => setAnalysing(true)} />
         ) : (
           <Spinner fill="box" label="Working out the summary" />
         )
