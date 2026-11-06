@@ -1054,16 +1054,16 @@
   }
 }
 
-/* Close (stops candidates starting the test): red, like other stop actions. */
-.test-close {
-  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
-  background: var(--danger-soft);
-  color: var(--danger);
+/* Close (stops candidates starting the test): a solid red button. */
+.test-close,
+.test-close:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: #ffffff;
 }
 
 .test-close:hover:not(:disabled) {
-  border-color: var(--danger);
-  background: var(--danger-soft);
+  filter: brightness(1.08);
 }
 
 /* Results → Release scores bar. */
