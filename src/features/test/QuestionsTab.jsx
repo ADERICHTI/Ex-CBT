@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ArrowDown, ArrowUp, ChevronDown, CircleCheck, Copy, FileInput, Lock, MessageSquareText, Plus, Trash2, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, Bookmark, ChevronDown, CircleCheck, Copy, FileInput, Lock, MessageSquareText, Plus, Trash2, X } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import MenuButton from '../../lib/MenuButton.jsx'
 import { useToast } from '../../lib/useToast.jsx'
@@ -7,6 +7,8 @@ import { parseQuestionsFile } from '../../services/csv.js'
 import { DIFFICULTIES, newQuestionId } from '../../services/firestore.js'
 import ReviewDialog from '../ai/ReviewDialog.jsx'
 import DawnOrb from '../ai/DawnOrb.jsx'
+import { keepQuestion, textAsQuestion } from '../../lib/keep.js'
+import { useKeep, useKeepTargets } from '../keep/keepContext.js'
 import { useTestEditor } from './testContext.js'
 
 const blankQuestion = () => ({
@@ -34,6 +36,19 @@ export default function QuestionsTab() {
   // while candidates are sitting the test would mark them wrongly.
   const locked = test.status === 'open'
   const questions = draft.questions
+  const keep = useKeep()
+
+  // Keep → Paste: kept questions (and text or links, as a question's
+  // wording) go at the end, as one undo step. Not while the test is open.
+  const pasteQuestion = (q) => edit((d) => ({ ...d, questions: [...d.questions, { ...blankQuestion(), ...q, id: newQuestionId() }] }))
+  useKeepTargets(
+    locked
+      ? null
+      : {
+          question: (data) => pasteQuestion(data),
+          text: (data) => pasteQuestion(textAsQuestion(data)),
+        },
+  )
 
   // key: typing in one field merges into one undo step (editorHistory.js).
   const setQuestion = (index, fn, key) =>
@@ -296,7 +311,16 @@ export default function QuestionsTab() {
                   >
                     <ArrowDown size={16} />
                   </button>
-                  <button type="button" className="icon-btn" onClick={() => duplicate(index)} aria-label="Duplicate" title="Duplicate">
+                  <button
+                  type="button"
+                  className="icon-btn"
+                  onClick={() => keep?.keep(keepQuestion(q))}
+                  aria-label="Keep"
+                  title="Keep (paste it into any test)"
+                >
+                  <Bookmark size={16} />
+                </button>
+                <button type="button" className="icon-btn" onClick={() => duplicate(index)} aria-label="Duplicate" title="Duplicate">
                     <Copy size={16} />
                   </button>
                   <button

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
+import KeepProvider from '../keep/KeepProvider.jsx'
 import { MailCheck } from 'lucide-react'
 import AppShell from '../../lib/AppShell.jsx'
 import { recheckVerification, resendVerification, signOut } from './authActions.js'
@@ -14,7 +15,13 @@ export default function RequireVerified() {
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
 
-  if (!needsVerification(user)) return <Outlet />
+  // Test makers' screens have the Keep (top bar → Keep).
+  if (!needsVerification(user))
+    return (
+      <KeepProvider>
+        <Outlet />
+      </KeepProvider>
+    )
 
   async function resend() {
     setBusy(true)

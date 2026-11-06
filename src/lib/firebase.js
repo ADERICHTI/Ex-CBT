@@ -56,6 +56,12 @@ if (useEmulators) connectFunctionsEmulator(functions, '127.0.0.1', port(5001))
 export const billingDb = getFirestore(firebaseApp, 'billing')
 if (useEmulators) connectFirestoreEmulator(billingDb, '127.0.0.1', port(8080))
 
+// The suite-wide "suite" database: each person's own things that follow
+// them across Quality Tools apps (Keep: keeps/{uid}/items). Its rules are
+// in peraform/firestore.suite.rules.
+export const suiteDb = getFirestore(firebaseApp, 'suite')
+if (useEmulators) connectFirestoreEmulator(suiteDb, '127.0.0.1', port(8080))
+
 // The suite's shared AI endpoint and wallet set-up (they live in PeraForm's
 // functions; HyperCBT's features are added there - functions/ai/hypercbt.js).
 // AI runs stream progress and can take a while (the function allows 300 s).

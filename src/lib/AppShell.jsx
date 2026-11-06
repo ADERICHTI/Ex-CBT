@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { Menu, Moon, PanelLeft, Search, Sun, X } from 'lucide-react'
+import { Bookmark, Menu, Moon, PanelLeft, Search, Sun, X } from 'lucide-react'
 import AccountMenu from '../features/auth/AccountMenu.jsx'
 import BalanceChip from '../features/credits/BalanceChip.jsx'
+import { useKeep } from '../features/keep/keepContext.js'
 import AppSwitcher from './AppSwitcher.jsx'
 import LogoMark from './LogoMark.jsx'
 import { useTheme } from './useTheme.js'
@@ -20,6 +21,7 @@ import './AppShell.css'
 //   children - content to show instead of the route's <Outlet />
 export default function AppShell({ nav = null, search = false, center = null, actions = null, switcher = true, children }) {
   const { theme, toggleTheme } = useTheme()
+  const keep = useKeep() // null outside test makers' screens
   const [searchText, setSearchText] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -59,6 +61,11 @@ export default function AppShell({ nav = null, search = false, center = null, ac
         )}
         <div className="topbar-actions">
           {actions}
+          {keep && (
+            <button type="button" className="icon-btn" onClick={keep.openKeep} aria-label="Keep" title="Keep">
+              <Bookmark size={18} />
+            </button>
+          )}
           <BalanceChip />
           <button
             type="button"
