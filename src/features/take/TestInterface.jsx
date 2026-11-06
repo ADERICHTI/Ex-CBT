@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Clock, LogOut, Send, TriangleAlert, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, LayoutGrid, LogOut, Send, TriangleAlert, X } from 'lucide-react';
 import { useTestSession } from '../../hooks/useTestSession';
 import { getAnswerKey, getSubmission, getTest, submitTestAttempt } from '../../services/firestore';
 import Spinner from '../../lib/Spinner.jsx';
 import ConfirmModal from '../../lib/ConfirmModal.jsx';
+import QtWindow from '../../lib/QtWindow.jsx';
 import LogoMark from '../../lib/LogoMark.jsx';
 import { useToast } from '../../lib/useToast.jsx';
 import { useTestTheme } from '../../lib/useTestTheme.js';
@@ -26,6 +27,7 @@ export default function TestInterface({ preview = false }) {
   const [status, setStatus] = useState('loading'); // loading | blocked | ready
   const [test, setTest] = useState(null);
   useTestTheme(test);
+  const [allOpen, setAllOpen] = useState(false); // phones: every question number, in a window
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
@@ -280,6 +282,24 @@ export default function TestInterface({ preview = false }) {
 
   const answered = (i) => userAnswers[i] !== undefined;
 
+  // The question numbers, coloured by state (current / answered).
+  const numbers = (onPick) => (
+    <div className="attempt-nav-grid">
+      {questions.map((_, i) => (
+        <button
+          key={i}
+          type="button"
+          className={`qnav${i === currentIndex ? ' current' : answered(i) ? ' answered' : ''}`}
+          onClick={() => onPick(i)}
+          aria-label={`Question ${i + 1}${answered(i) ? ', answered' : ''}`}
+          aria-current={i === currentIndex ? 'step' : undefined}
+        >
+          {i + 1}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <div className="attempt">
       {preview && (
@@ -359,26 +379,33 @@ export default function TestInterface({ preview = false }) {
 
         <nav className="take-card attempt-nav" aria-label="Questions">
           <p className="attempt-nav-title">Questions</p>
-          <div className="attempt-nav-grid">
-            {questions.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                className={`qnav${i === currentIndex ? ' current' : answered(i) ? ' answered' : ''}`}
-                onClick={() => setCurrentIndex(i)}
-                aria-label={`Question ${i + 1}${answered(i) ? ', answered' : ''}`}
-                aria-current={i === currentIndex ? 'step' : undefined}
-              >
-                {i + 1}
-              </button>
-            ))}
-          </div>
+          {/* Phones show one row here; "See all" opens the rest. */}
+          {numbers((i) => setCurrentIndex(i))}
+          {questions.length > 6 && (
+            <button type="button" className="btn btn-outline attempt-nav-all" onClick={() => setAllOpen(true)}>
+              <LayoutGrid size={16} /> See all {questions.length} questions
+            </button>
+          )}
           <p className="attempt-nav-key">
-            {answeredCount} of {questions.length} answered
+            {answeredCount} of {questions.length} answered · tap a number to go to it
           </p>
         </nav>
       </div>
 
+      <QtWindow
+        open={allOpen}
+        onClose={() => setAllOpen(false)}
+        icon={LayoutGrid}
+        label="Questions"
+        context={`${answeredCount} of ${questions.length} answered`}
+        title="Go to a question"
+        hint="Tap a number to go to it. Green ones are answered; the one you’re on is filled in."
+      >
+        {numbers((i) => {
+          setCurrentIndex(i);
+          setAllOpen(false);
+        })}
+      </QtWindow>
       <ConfirmModal
         open={showModal}
         label="Submit test"

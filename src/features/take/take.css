@@ -344,6 +344,13 @@
   color: var(--on-accent);
 }
 
+.attempt-nav-all {
+  display: none;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
 .attempt-nav-key {
   margin: 0;
   color: var(--text-muted);
@@ -393,9 +400,19 @@
     grid-template-columns: 1fr;
   }
 
-  /* Phones: the question grid follows the question instead of a side column. */
+  /* Phones: the question grid follows the question instead of a side column,
+     showing one row of numbers; "See all" opens every number in a window. */
   .attempt-nav {
     position: static;
+  }
+
+  .attempt-nav .attempt-nav-grid {
+    max-height: 40px;
+    overflow: hidden;
+  }
+
+  .attempt-nav-all {
+    display: inline-flex;
   }
 }
 
