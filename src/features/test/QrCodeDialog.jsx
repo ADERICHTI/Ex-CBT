@@ -56,7 +56,11 @@ export default function QrCodeDialog({ open, onClose, testId, testTitle, status 
           }}
         >
           <AlertCircle size={16} style={{ flexShrink: 0 }} />
-          <span>Publish the test so candidates can start it.</span>
+          <span>
+            {status === 'closed'
+              ? 'This test is closed, so candidates who scan it can’t start it. Reopen it first.'
+              : 'Publish the test so candidates can start it.'}
+          </span>
         </div>
       )}
 
