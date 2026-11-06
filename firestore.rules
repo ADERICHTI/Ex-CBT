@@ -47,9 +47,29 @@ service cloud.firestore {
         getAfter(/databases/$(database)/documents/tests/$(testId)).data.createdBy == request.auth.token.email;
     }
 
+    // Owner or editor (Share window): editors' uids are in editorIds, which
+    // only the manageEditors / acceptInvites functions write. Editors change
+    // the test and see results; deleting stays owner-only.
+    function canEdit(test) {
+      return isMaker() &&
+        (test.createdBy == request.auth.token.email || request.auth.uid in test.get('editorIds', []));
+    }
+
+    function isTestEditor(testId) {
+      return canEdit(get(/databases/$(database)/documents/tests/$(testId)).data);
+    }
+
+    function willEditTest(testId) {
+      return canEdit(getAfter(/databases/$(database)/documents/tests/$(testId)).data);
+    }
+
     match /tests/{testId} {
       allow get: if isSignedIn();
-      allow list: if isMaker() && resource.data.createdBy == request.auth.token.email;
+      // Two queries: where('createdBy', '==', email) and
+      // where('editorIds', 'array-contains', uid) (tests shared with me).
+      allow list: if isMaker() &&
+        (resource.data.createdBy == request.auth.token.email ||
+         request.auth.uid in resource.data.get('editorIds', []));
       // The roster must never sit on this publicly-readable doc - it lives in
       // the owner-only roster subcollection below.
       allow create: if isMaker() &&
@@ -58,9 +78,9 @@ service cloud.firestore {
         !('allowedUsers' in request.resource.data);
       // createdBy is fixed at creation: an owner can't hand a test (and its
       // submissions) to another account.
-      allow update: if isTestOwner(testId) &&
+      allow update: if isTestEditor(testId) &&
         request.resource.data.createdBy == resource.data.createdBy &&
-        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['allowedUsers']);
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['allowedUsers', 'editorIds']);
       allow delete: if isTestOwner(testId);
 
       // tests/{testId}/answerKey/data - the correct answers, index-aligned
@@ -73,8 +93,9 @@ service cloud.firestore {
       // nobody can plant an answer key on someone else's test, while
       // createTest() can still write it in the same batch as the parent.
       match /answerKey/{doc} {
-        allow read, delete: if isTestOwner(testId);
-        allow create, update: if willOwnTest(testId);
+        allow read: if isTestEditor(testId);
+        allow delete: if isTestOwner(testId);
+        allow create, update: if willEditTest(testId);
       }
 
       // tests/{testId}/roster/data - the approved name + Student ID list.
@@ -82,8 +103,9 @@ service cloud.firestore {
       // could read it they could start the test as a classmate. The
       // startTest Cloud Function checks it via the Admin SDK.
       match /roster/{doc} {
-        allow read, delete: if isTestOwner(testId);
-        allow create, update: if willOwnTest(testId);
+        allow read: if isTestEditor(testId);
+        allow delete: if isTestOwner(testId);
+        allow create, update: if willEditTest(testId);
       }
 
       // tests/{testId}/submissions/{studentId} - one doc per test-taker,
@@ -100,7 +122,8 @@ service cloud.firestore {
         // A candidate reads their own; the test's (verified) owner reads all.
         allow read: if isSignedIn() &&
           (resource.data.userEmail == request.auth.token.email ||
-           (isMaker() && resource.data.testOwnerEmail == request.auth.token.email));
+           (isMaker() && resource.data.testOwnerEmail == request.auth.token.email) ||
+           isTestEditor(testId));
 
         // Starting an attempt (roster check + dedupe), finalizing it
         // (grading), and deleting it all go through Cloud Functions
@@ -110,6 +133,19 @@ service cloud.firestore {
         // for a client to legitimately do here directly.
         allow write: if false;
       }
+
+      // tests/{testId}/sharing/data - pending invites (emails). Server only.
+      match /sharing/{doc} {
+        allow read, write: if false;
+      }
+    }
+
+    // invites/{email} and rate/{key} (sharing, email limits): server only.
+    match /invites/{email} {
+      allow read, write: if false;
+    }
+    match /rate/{key} {
+      allow read, write: if false;
     }
 
     // Collection-group access for the dashboard's cross-test recent-

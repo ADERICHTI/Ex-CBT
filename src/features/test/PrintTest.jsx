@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Printer } from 'lucide-react'
 import Spinner from '../../lib/Spinner.jsx'
-import { getAnswerKey, getTest, joinQuestions } from '../../services/firestore.js'
+import { canEditTest, getAnswerKey, getTest, joinQuestions } from '../../services/firestore.js'
 import { useAuth } from '../auth/useAuth.js'
 import './print.css'
 
@@ -25,7 +25,7 @@ export default function PrintTest() {
         const [foundTest, key] = await Promise.all([getTest(testId), getAnswerKey(testId)])
         if (cancelled) return
 
-        if (!foundTest || foundTest.createdBy !== user?.email) {
+        if (!canEditTest(foundTest, user)) {
           setLoadError('not-found')
           return
         }
@@ -43,7 +43,7 @@ export default function PrintTest() {
     return () => {
       cancelled = true
     }
-  }, [testId, user?.email])
+  }, [testId, user])
 
   useEffect(() => {
     if (!test) return

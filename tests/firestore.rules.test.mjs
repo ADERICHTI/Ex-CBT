@@ -104,6 +104,31 @@ await check('can’t write someone else’s folders', assertFails(setDoc(doc(stu
 await check('own recent templates', assertSucceeds(setDoc(doc(owner, `users/${OWNER}/settings/templates`), { recentKeys: ['quick-quiz'] })))
 await check('can’t read someone else’s recent templates', assertFails(getDoc(doc(student, `users/${OWNER}/settings/templates`))))
 
+// ── Editors (Share window): uids in editorIds, written by functions only ──
+const editorCtx = env.authenticatedContext('editor-uid', { email: 'editor@example.com', email_verified: true }).firestore()
+const outsider = as('outsider@example.com')
+await seed(async (db) => {
+  await setDoc(doc(db, 'tests/s1'), { createdBy: OWNER, status: 'draft', editorIds: ['editor-uid'], questions: [] })
+  await setDoc(doc(db, 'tests/s1/answerKey/data'), { answers: [], createdBy: OWNER })
+  await setDoc(doc(db, 'tests/s1/roster/data'), { allowedUsers: [], createdBy: OWNER })
+  await setDoc(doc(db, 'tests/s1/submissions/a1'), { testOwnerEmail: OWNER, userEmail: STUDENT, testTaken: true })
+  await setDoc(doc(db, 'tests/s1/sharing/data'), { invitedEmails: ['new@example.com'] })
+})
+await check('editor lists tests shared with them', assertSucceeds(getDocs(query(collection(editorCtx, 'tests'), where('editorIds', 'array-contains', 'editor-uid')))))
+await check('outsider can’t list someone’s shared tests', assertFails(getDocs(query(collection(outsider, 'tests'), where('editorIds', 'array-contains', 'editor-uid')))))
+await check('editor edits the test', assertSucceeds(updateDoc(doc(editorCtx, 'tests/s1'), { displayName: 'Shared' })))
+await check('editor reads and saves the answer key', assertSucceeds(setDoc(doc(editorCtx, 'tests/s1/answerKey/data'), { answers: ['x'], createdBy: OWNER })))
+await check('editor reads the approved list', assertSucceeds(getDoc(doc(editorCtx, 'tests/s1/roster/data'))))
+await check('editor reads all results', assertSucceeds(getDocs(collection(editorCtx, 'tests/s1/submissions'))))
+await check('outsider can’t read all results', assertFails(getDocs(collection(outsider, 'tests/s1/submissions'))))
+await check('outsider can’t read the answer key', assertFails(getDoc(doc(outsider, 'tests/s1/answerKey/data'))))
+await check('editor can’t add editors directly', assertFails(updateDoc(doc(editorCtx, 'tests/s1'), { editorIds: ['editor-uid', 'x'] })))
+await check('owner can’t change editors directly either', assertFails(updateDoc(doc(owner, 'tests/s1'), { editorIds: [] })))
+await check('outsider can’t make themselves an editor', assertFails(updateDoc(doc(outsider, 'tests/s1'), { editorIds: ['outsider@example.com'] })))
+await check('editor can’t delete the test', assertFails(deleteDoc(doc(editorCtx, 'tests/s1'))))
+await check('nobody reads pending invites from the app', assertFails(getDoc(doc(owner, 'tests/s1/sharing/data'))))
+await check('nobody reads invites/', assertFails(getDoc(doc(owner, 'invites/new@example.com'))))
+
 await check('owner deletes the test doc', assertSucceeds(deleteDoc(doc(owner, 'tests/t1'))))
 
 console.log(`\n${passed} passed, ${failed} failed`)

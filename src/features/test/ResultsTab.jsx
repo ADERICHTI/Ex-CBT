@@ -49,7 +49,6 @@ export default function ResultsTab() {
     () =>
       watchSubmissions(
         test.id,
-        user.email,
         (all) => {
           setSubs(
             all

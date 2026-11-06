@@ -52,7 +52,7 @@ function readSavedView() {
 
 export default function DashboardPage() {
   const { user } = useAuth()
-  const { tests, loading, error } = useMyTests(user.email)
+  const { tests, loading, error } = useMyTests(user.email, user.uid)
   const navigate = useNavigate()
   const { search: rawSearch } = useOutletContext()
   const search = rawSearch.trim().toLowerCase()

@@ -53,7 +53,6 @@ export default function CandidatesTab() {
     () =>
       watchSubmissions(
         test.id,
-        user.email,
         (subs) => setStarted(subs.filter((s) => !s.testTaken)),
         () => {},
       ),

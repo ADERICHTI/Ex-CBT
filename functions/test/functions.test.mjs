@@ -1,6 +1,6 @@
 // Calls HyperCBT's Cloud Functions directly (no functions emulator needed)
 // against the Firestore emulator:
-//   FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 GCLOUD_PROJECT=demo-hypercbt node test/functions.test.mjs
+//   FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 GCLOUD_PROJECT=demo-hypercbt node test/functions.test.mjs
 // (from functions/). FUNCTIONS_EMULATOR=true skips the App Check check.
 process.env.FUNCTIONS_EMULATOR = 'true'
 const { getFirestore } = await import('firebase-admin/firestore')
@@ -88,6 +88,36 @@ await check('owner signed in unverified can’t delete the test', () =>
 await check('only the owner can delete the test', () =>
   expectError(fns.deleteTest.run(req(STUDENT, { testId: id })), 'permission-denied'),
 )
+// ── Share window: invites, editors, emailing the link ──
+// (Uses the Auth emulator for getUserByEmail: FIREBASE_AUTH_EMULATOR_HOST.)
+const NEW = `new-${Date.now()}@example.com`
+await check('owner invites someone without an account', async () => {
+  equal(await fns.manageEditors.run(req(OWNER, { action: 'add', testId: id, email: NEW })), { status: 'invited' })
+  const list = await fns.manageEditors.run(req(OWNER, { action: 'list', testId: id }))
+  equal([list.isOwner, list.invites], [true, [NEW]])
+})
+await check('a non-owner can’t add people', () =>
+  expectError(fns.manageEditors.run(req(STUDENT, { action: 'add', testId: id, email: 'x@example.com' })), 'not-found'))
+await check('an unverified account can’t claim an invite', async () => {
+  equal(await fns.acceptInvites.run({ auth: { uid: 'u-new', token: { email: NEW, email_verified: false } } }), { joined: 0 })
+})
+await check('signing in with the invited email (verified) makes them an editor', async () => {
+  equal(await fns.acceptInvites.run({ auth: { uid: 'u-new', token: { email: NEW, email_verified: true } } }), { joined: 1 })
+  equal((await testRef.get()).data().editorIds, ['u-new'])
+  equal((await db.doc(`invites/${NEW}`).get()).exists, false)
+})
+await check('an editor sees the list but can’t remove people', async () => {
+  const asEditor = { auth: { uid: 'u-new', token: { email: NEW, email_verified: true } }, data: { action: 'list', testId: id } }
+  equal((await fns.manageEditors.run(asEditor)).isOwner, false)
+  await expectError(fns.manageEditors.run({ ...asEditor, data: { action: 'remove', testId: id, uid: 'u-new' } }), 'permission-denied')
+})
+await check('emailing the link needs the test open', () =>
+  expectError(fns.emailTestLink.run(req(OWNER, { testId: id, to: 'a@example.com' })), 'failed-precondition'))
+await check('owner removes the editor', async () => {
+  equal(await fns.manageEditors.run(req(OWNER, { action: 'remove', testId: id, uid: 'u-new' })), { status: 'removed' })
+  equal((await testRef.get()).data().editorIds, [])
+})
+
 await check('deleteTest removes the test and everything under it', async () => {
   equal(await fns.deleteTest.run(req(OWNER, { testId: id })), { deleted: true })
   const left = await Promise.all(

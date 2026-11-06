@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Copy, Download, Eye, FileJson, Keyboard, Link2, MoreVertical, Printer, QrCode as QrCodeIcon, Redo2, RotateCcw, Send, Square, Trash2, Undo2 } from 'lucide-react'
+import { Copy, Download, Eye, FileJson, Keyboard, Link2, MoreVertical, Printer, QrCode as QrCodeIcon, Redo2, RotateCcw, Send, Square, Trash2, Undo2, UserPlus } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
+import ShareDialog from './ShareDialog.jsx'
 import MenuButton from '../../lib/MenuButton.jsx'
 import NoticeDialog from '../../lib/NoticeDialog.jsx'
 import { useToast } from '../../lib/useToast.jsx'
@@ -41,6 +42,7 @@ export default function TestActions() {
   const [busy, setBusy] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [qrOpen, setQrOpen] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
   const [downloadHypercbtOpen, setDownloadHypercbtOpen] = useState(false)
   const status = test.status ?? 'draft'
   // While a test is open its questions are locked, so history is too.
@@ -213,6 +215,15 @@ export default function TestActions() {
       </button>
       <button
         type="button"
+        className="icon-btn"
+        onClick={() => setShareOpen(true)}
+        aria-label="Share"
+        title="Share"
+      >
+        <UserPlus size={18} />
+      </button>
+      <button
+        type="button"
         className="icon-btn test-copy-link"
         onClick={copyLink}
         aria-label="Copy test link"
@@ -252,13 +263,16 @@ export default function TestActions() {
           ...(status === 'open' || status === 'closed'
             ? [{ label: 'Unpublish', icon: RotateCcw, onSelect: () => setConfirm('unpublish') }]
             : []),
+          { label: 'Share', icon: UserPlus, onSelect: () => setShareOpen(true) },
           { label: 'Make a copy', icon: Copy, onSelect: makeCopy },
           { label: 'Show QR code', icon: QrCodeIcon, onSelect: () => setQrOpen(true) },
           { label: 'Download as HyperCBT file', icon: FileJson, onSelect: () => setDownloadHypercbtOpen(true) },
           { label: 'Download questions (CSV)', icon: Download, onSelect: () => download('csv') },
           { label: 'Download questions (JSON)', icon: Download, onSelect: () => download('json') },
           { label: 'Keyboard shortcuts', icon: Keyboard, onSelect: () => setShortcutsOpen(true) },
-          { label: 'Delete test', icon: Trash2, danger: true, onSelect: () => setConfirm('delete') },
+          ...(test.createdBy === user.email
+            ? [{ label: 'Delete test', icon: Trash2, danger: true, onSelect: () => setConfirm('delete') }]
+            : []),
         ]}
       />
 
@@ -268,6 +282,16 @@ export default function TestActions() {
         test={test}
         draft={draft}
         onToast={showToast}
+      />
+      <ShareDialog
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        showToast={showToast}
+        onPublish={() => {
+          setShareOpen(false)
+          publish()
+        }}
+        onCopyLink={copyLink}
       />
       <QrCodeDialog
         open={qrOpen}

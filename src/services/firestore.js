@@ -112,22 +112,39 @@ export async function getTest(testId) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null
 }
 
-// Live list of the tests this person owns, newest edit first.
-export function watchMyTests(email, onChange, onError) {
-  const q = query(collection(db, 'tests'), where('createdBy', '==', email), orderBy('updatedAt', 'desc'))
-  return onSnapshot(
-    q,
-    (snap) =>
-      onChange(
-        snap.docs.map((d) => {
-          // 'estimate': a just-written serverTimestamp shows local time, not null.
-          const data = d.data({ serverTimestamps: 'estimate' })
-          return { id: d.id, ...data, updatedAt: data.updatedAt?.toDate() ?? null }
-        }),
-      ),
-    onError,
-  )
+// Live list of the tests this person owns or edits (shared with them in
+// the Share window), newest edit first. Two queries, merged.
+export function watchMyTests(email, uid, onChange, onError) {
+  const lists = { own: null, shared: null }
+  const toTest = (d) => {
+    // 'estimate': a just-written serverTimestamp shows local time, not null.
+    const data = d.data({ serverTimestamps: 'estimate' })
+    return { id: d.id, ...data, updatedAt: data.updatedAt?.toDate() ?? null }
+  }
+  const emit = () => {
+    if (!lists.own || !lists.shared) return
+    const byId = new Map([...lists.own, ...lists.shared].map((t) => [t.id, t]))
+    onChange([...byId.values()].sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0)))
+  }
+  const watch = (key, q) =>
+    onSnapshot(
+      q,
+      (snap) => {
+        lists[key] = snap.docs.map(toTest)
+        emit()
+      },
+      onError,
+    )
+  const stops = [
+    watch('own', query(collection(db, 'tests'), where('createdBy', '==', email), orderBy('updatedAt', 'desc'))),
+    watch('shared', query(collection(db, 'tests'), where('editorIds', 'array-contains', uid), orderBy('updatedAt', 'desc'))),
+  ]
+  return () => stops.forEach((stop) => stop())
 }
+
+// Owner or editor of this test (the Share window's editors).
+export const canEditTest = (test, user) =>
+  Boolean(test && user && (test.createdBy === user.email || (test.editorIds ?? []).includes(user.uid)))
 
 export function watchTest(testId, onChange, onError) {
   return onSnapshot(
@@ -229,8 +246,9 @@ export async function getSubmission(testId, attemptId) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null
 }
 
-export function watchSubmissions(testId, ownerEmail, onChange, onError) {
-  const q = query(collection(db, 'tests', testId, 'submissions'), where('testOwnerEmail', '==', ownerEmail))
+// The owner and editors read every result (firestore.rules → isTestEditor).
+export function watchSubmissions(testId, onChange, onError) {
+  const q = collection(db, 'tests', testId, 'submissions')
   return onSnapshot(q, (snap) => onChange(snap.docs.map((d) => ({ id: d.id, ...d.data() }))), onError)
 }
 
@@ -253,3 +271,9 @@ const deleteSubmissionCallable = httpsCallable(functions, 'deleteSubmission')
 export async function deleteSubmission(testId, attemptId) {
   await deleteSubmissionCallable({ testId, attemptId })
 }
+
+// Share window (functions/index.js → manageEditors, emailTestLink) and
+// invites claimed after sign-in (acceptInvites).
+export const callManageEditors = httpsCallable(functions, 'manageEditors')
+export const callEmailTestLink = httpsCallable(functions, 'emailTestLink')
+export const callAcceptInvites = httpsCallable(functions, 'acceptInvites')

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
-import { getAnswerKey, joinQuestions, saveTestDraft, watchTest } from '../../services/firestore.js'
+import { canEditTest, getAnswerKey, joinQuestions, saveTestDraft, watchTest } from '../../services/firestore.js'
 import { useAuth } from '../auth/useAuth.js'
 import { historyReducer, initialHistory } from './editorHistory.js'
 import { TestContext } from './testContext.js'
@@ -31,7 +31,7 @@ export default function TestEditorProvider({ testId, children }) {
       watchTest(
         testId,
         async (data) => {
-          if (!data || data.createdBy !== user.email) {
+          if (!canEditTest(data, user)) {
             setLoadError('not-found')
             return
           }
@@ -54,7 +54,7 @@ export default function TestEditorProvider({ testId, children }) {
         },
         (error) => setLoadError(error.code === 'permission-denied' ? 'not-found' : 'failed'),
       ),
-    [testId, user.email],
+    [testId, user],
   )
 
   // edit(draft => draft, key?): typing passes a key per field so a word
