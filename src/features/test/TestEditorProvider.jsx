@@ -46,6 +46,7 @@ export default function TestEditorProvider({ testId, children }) {
               displayName: data.displayName ?? '',
               minutes: data.minutes ?? 15,
               questions: joinQuestions(data.questions, key),
+              theme: data.theme ?? null,
             }
             dispatch({ type: 'load', draft: initial })
           } catch {

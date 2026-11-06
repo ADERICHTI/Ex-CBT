@@ -5,7 +5,6 @@ import MenuButton from '../../lib/MenuButton.jsx'
 import { useToast } from '../../lib/useToast.jsx'
 import { parseQuestionsFile } from '../../services/csv.js'
 import { DIFFICULTIES, newQuestionId } from '../../services/firestore.js'
-import EditTestDialog from '../ai/EditTestDialog.jsx'
 import ReviewDialog from '../ai/ReviewDialog.jsx'
 import DawnOrb from '../ai/DawnOrb.jsx'
 import { useTestEditor } from './testContext.js'
@@ -28,7 +27,6 @@ export default function QuestionsTab() {
   const [toast, showToast] = useToast()
   const [pending, setPending] = useState(null) // { kind: 'question' | 'option', index, option? }
   const [reviewing, setReviewing] = useState(false)
-  const [editing, setEditing] = useState(false)
   // Questions whose explanation box was opened (ones with text always show it).
   const [explaining, setExplaining] = useState(() => new Set())
   const fileRef = useRef(null)
@@ -150,9 +148,6 @@ export default function QuestionsTab() {
           </p>
           {!locked && questions.length > 0 && (
             <span className="questions-ai">
-              <button type="button" className="btn btn-outline btn-sm" onClick={() => setEditing(true)}>
-                <DawnOrb size={18} /> Edit with Dawn
-              </button>
               <button type="button" className="btn btn-outline btn-sm" onClick={() => setReviewing(true)}>
                 <DawnOrb size={18} /> Review with Dawn
               </button>
@@ -327,7 +322,6 @@ export default function QuestionsTab() {
         <input ref={fileRef} type="file" accept=".csv,.json,text/csv,application/json" hidden onChange={importMore} />
 
         <ReviewDialog open={reviewing} onClose={() => setReviewing(false)} />
-        <EditTestDialog open={editing} onClose={() => setEditing(false)} onApplied={showToast} />
 
         <ConfirmModal
           open={Boolean(pending)}

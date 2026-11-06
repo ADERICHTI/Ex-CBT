@@ -3,6 +3,7 @@ import { Link, Outlet, useParams } from 'react-router-dom'
 import { BarChart3, ListChecks, Settings, Users } from 'lucide-react'
 import AppShell from '../../lib/AppShell.jsx'
 import Spinner from '../../lib/Spinner.jsx'
+import { useTestTheme } from '../../lib/useTestTheme.js'
 import TestActions from './TestActions.jsx'
 import TestEditorProvider from './TestEditorProvider.jsx'
 import TestTitleField from './TestTitleField.jsx'
@@ -24,6 +25,7 @@ export default function TestLayout() {
 function TestFrame({ testId }) {
   const { test, draft, loadError } = useTestEditor()
   const ready = Boolean(test && draft)
+  useTestTheme(draft, { font: false })
 
   // The browser tab shows which test this is, and follows renames.
   useEffect(() => {

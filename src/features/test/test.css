@@ -1031,3 +1031,11 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+
+/* Edit with Dawn and Theme sit in the top bar on wide screens; on phones
+   they're in the ⋮ menu (as in PeraForm). */
+@media (max-width: 767px) {
+  .test-desktop {
+    display: none;
+  }
+}

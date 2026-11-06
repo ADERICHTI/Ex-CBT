@@ -200,13 +200,15 @@ export async function createTest(email, { displayName = '', minutes = 15, questi
 
 // Saves the editor's draft: test fields, and the answer key with them so
 // the two never drift out of line.
-export async function saveTestDraft(testId, email, { displayName, minutes, questions }) {
+export async function saveTestDraft(testId, email, { displayName, minutes, questions, theme }) {
   const { publicQuestions, key } = splitQuestions(questions)
   const batch = writeBatch(db)
   batch.update(testRef(testId), {
     displayName,
     minutes: Number(minutes) || 0,
     questions: publicQuestions,
+    // The Theme panel's look (lib/theme.js); null until one is chosen.
+    theme: theme ?? null,
     updatedBy: email,
     updatedAt: serverTimestamp(),
   })

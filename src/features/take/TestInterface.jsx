@@ -7,6 +7,7 @@ import Spinner from '../../lib/Spinner.jsx';
 import ConfirmModal from '../../lib/ConfirmModal.jsx';
 import LogoMark from '../../lib/LogoMark.jsx';
 import { useToast } from '../../lib/useToast.jsx';
+import { useTestTheme } from '../../lib/useTestTheme.js';
 import './take.css';
 
 // The test as a candidate sits it. With `preview` (the owner's "Preview as
@@ -24,6 +25,7 @@ export default function TestInterface({ preview = false }) {
 
   const [status, setStatus] = useState('loading'); // loading | blocked | ready
   const [test, setTest] = useState(null);
+  useTestTheme(test);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});

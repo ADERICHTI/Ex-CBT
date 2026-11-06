@@ -4,6 +4,9 @@ import { ArrowRight, Clock, Hourglass, Info, ListChecks, Unlink } from 'lucide-r
 import { useTestSession } from '../../hooks/useTestSession'
 import { getTest, hasUserTakenTest, startTestAttempt } from '../../services/firestore'
 import Spinner from '../../lib/Spinner.jsx'
+import HeaderBanner from '../../lib/HeaderBanner.jsx'
+import { themeOf } from '../../lib/theme.js'
+import { useTestTheme } from '../../lib/useTestTheme.js'
 import GoogleMark from '../../lib/GoogleMark.jsx'
 import { authErrorMessage, signInWithGoogle } from '../auth/authActions.js'
 import { useGoogleOneTap } from '../auth/oneTap.js'
@@ -69,6 +72,7 @@ function StartForm({ user }) {
 
   const [status, setStatus] = useState('loading') // loading | no-id | expired | ready
   const [test, setTest] = useState(null)
+  useTestTheme(test)
   const [name, setName] = useState('')
   const [studentId, setStudentId] = useState('')
   const [beginError, setBeginError] = useState('')
@@ -188,6 +192,7 @@ function StartForm({ user }) {
 
   return (
     <div className="start">
+      {test.theme && <HeaderBanner theme={themeOf(test)} />}
       <header className="start-head">
         <h1>{test.displayName}</h1>
         <p className="start-meta">

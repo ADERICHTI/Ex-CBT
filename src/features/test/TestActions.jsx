@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Copy, Download, Eye, FileJson, Keyboard, Link2, MoreVertical, Printer, QrCode as QrCodeIcon, Redo2, RotateCcw, Send, Square, Trash2, Undo2, UserPlus } from 'lucide-react'
+import { Copy, Download, Eye, FileJson, Keyboard, Link2, MoreVertical, Palette, Printer, QrCode as QrCodeIcon, Redo2, RotateCcw, Send, Square, Trash2, Undo2, UserPlus } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import ShareDialog from './ShareDialog.jsx'
+import ThemePanel from './ThemePanel.jsx'
+import DawnOrb from '../ai/DawnOrb.jsx'
+import EditTestDialog from '../ai/EditTestDialog.jsx'
 import MenuButton from '../../lib/MenuButton.jsx'
 import NoticeDialog from '../../lib/NoticeDialog.jsx'
 import { useToast } from '../../lib/useToast.jsx'
@@ -11,7 +14,6 @@ import {
   createTest,
   deleteTest,
   newQuestionId,
-  STATUS_LABELS,
   testProblems,
   updateTestFields,
 } from '../../services/firestore.js'
@@ -43,6 +45,8 @@ export default function TestActions() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [qrOpen, setQrOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
+  const [themeOpen, setThemeOpen] = useState(false)
+  const [aiOpen, setAiOpen] = useState(false)
   const [downloadHypercbtOpen, setDownloadHypercbtOpen] = useState(false)
   const status = test.status ?? 'draft'
   // While a test is open its questions are locked, so history is too.
@@ -179,9 +183,27 @@ export default function TestActions() {
 
   return (
     <div className="test-actions">
-      <span className={`status status-${status}`} title="Status">
-        {STATUS_LABELS[status]}
-      </span>
+      {/* Questions can't change while candidates are sitting it. */}
+      {status !== 'open' && (
+        <button
+          type="button"
+          className="icon-btn test-ai test-desktop"
+          onClick={() => setAiOpen(true)}
+          aria-label="Edit with Dawn"
+          title="Edit with Dawn"
+        >
+          <DawnOrb size={24} />
+        </button>
+      )}
+      <button
+        type="button"
+        className="icon-btn test-desktop"
+        onClick={() => setThemeOpen(true)}
+        aria-label="Theme"
+        title="Theme"
+      >
+        <Palette size={18} />
+      </button>
       <span className="test-history" role="group" aria-label="Undo and redo">
         <button
           type="button"
@@ -258,6 +280,8 @@ export default function TestActions() {
         items={[
           ...(historyOn && canUndo ? [{ label: 'Undo', icon: Undo2, onSelect: undo }] : []),
           ...(historyOn && canRedo ? [{ label: 'Redo', icon: Redo2, onSelect: redo }] : []),
+          ...(status !== 'open' ? [{ label: 'Edit with Dawn', icon: DawnOrb, onSelect: () => setAiOpen(true) }] : []),
+          { label: 'Theme', icon: Palette, onSelect: () => setThemeOpen(true) },
           { label: 'Preview as a candidate', icon: Eye, onSelect: openPreview },
           { label: 'Print', icon: Printer, onSelect: openPrint },
           ...(status === 'open' || status === 'closed'
@@ -283,6 +307,8 @@ export default function TestActions() {
         draft={draft}
         onToast={showToast}
       />
+      <EditTestDialog open={aiOpen} onClose={() => setAiOpen(false)} onApplied={showToast} />
+      <ThemePanel open={themeOpen} onClose={() => setThemeOpen(false)} />
       <ShareDialog
         open={shareOpen}
         onClose={() => setShareOpen(false)}
