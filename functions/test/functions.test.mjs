@@ -91,9 +91,9 @@ await check('only the owner can delete the test', () =>
 // ── Release scores ──
 await db.doc(`tests/${id}/answerKey/data`).set({ answers: ['4', 'Paris'], explanations: ['2 + 2 = 4', 'Paris is France’s capital.'] }, { merge: true })
 await check('a candidate can’t release scores', () =>
-  expectError(fns.releaseScores.run(req(STUDENT, { testId: id })), 'not-found'))
+  expectError(fns.releaseTestScores.run(req(STUDENT, { testId: id })), 'not-found'))
 await check('owner releases: the result gets the review and is marked released', async () => {
-  const res = await fns.releaseScores.run(req(OWNER, { testId: id }))
+  const res = await fns.releaseTestScores.run(req(OWNER, { testId: id }))
   equal(res.released, 1)
   const sub = (await db.doc(`tests/${id}/submissions/s-1`).get()).data()
   equal([sub.released, sub.total, sub.review], [true, 2, [
@@ -102,7 +102,7 @@ await check('owner releases: the result gets the review and is marked released',
   ]])
 })
 await check('owner hides scores again', async () => {
-  equal(await fns.releaseScores.run(req(OWNER, { testId: id, release: false })), { released: 0, hidden: 1 })
+  equal(await fns.releaseTestScores.run(req(OWNER, { testId: id, release: false })), { released: 0, hidden: 1 })
   const sub = (await db.doc(`tests/${id}/submissions/s-1`).get()).data()
   equal([sub.released, sub.review], [false, undefined])
 })
@@ -118,10 +118,10 @@ await check('owner invites someone without an account', async () => {
 await check('a non-owner can’t add people', () =>
   expectError(fns.manageEditors.run(req(STUDENT, { action: 'add', testId: id, email: 'x@example.com' })), 'not-found'))
 await check('an unverified account can’t claim an invite', async () => {
-  equal(await fns.acceptInvites.run({ auth: { uid: 'u-new', token: { email: NEW, email_verified: false } } }), { joined: 0 })
+  equal(await fns.acceptTestInvites.run({ auth: { uid: 'u-new', token: { email: NEW, email_verified: false } } }), { joined: 0 })
 })
 await check('signing in with the invited email (verified) makes them an editor', async () => {
-  equal(await fns.acceptInvites.run({ auth: { uid: 'u-new', token: { email: NEW, email_verified: true } } }), { joined: 1 })
+  equal(await fns.acceptTestInvites.run({ auth: { uid: 'u-new', token: { email: NEW, email_verified: true } } }), { joined: 1 })
   equal((await testRef.get()).data().editorIds, ['u-new'])
   equal((await db.doc(`invites/${NEW}`).get()).exists, false)
 })

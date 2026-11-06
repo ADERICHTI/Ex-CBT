@@ -281,14 +281,14 @@ export async function deleteSubmission(testId, attemptId) {
 }
 
 // Share window (functions/index.js → manageEditors, emailTestLink) and
-// invites claimed after sign-in (acceptInvites).
+// invites claimed after sign-in (acceptTestInvites).
 export const callManageEditors = httpsCallable(functions, 'manageEditors')
 export const callEmailTestLink = httpsCallable(functions, 'emailTestLink')
-export const callAcceptInvites = httpsCallable(functions, 'acceptInvites')
+export const callAcceptInvites = httpsCallable(functions, 'acceptTestInvites')
 
-// Release scores (functions/index.js → releaseScores): the owner or an
+// Release scores (functions/index.js → releaseTestScores): the owner or an
 // editor shows candidates their result, answers and explanations.
-export const callReleaseScores = httpsCallable(functions, 'releaseScores')
+export const callReleaseScores = httpsCallable(functions, 'releaseTestScores')
 
 // A candidate's own finished attempt at a test (their result page). The
 // rules let them read only their own (userEmail).

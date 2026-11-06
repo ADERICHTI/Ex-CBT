@@ -36,6 +36,11 @@ function requireVerifiedMaker(request) {
 
 import { APP_URL, SMTP_PASS, emailHtml, sendMail } from './mail.js';
 
+// Function names are shared by every app in the quality-toolsx project
+// (PeraForm's functions live there too): give new ones a name PeraForm
+// doesn't use, or a deploy replaces PeraForm's (acceptInvites and
+// releaseScores are PeraForm's; ours are acceptTestInvites and
+// releaseTestScores).
 // Every callable starts with the App Check check.
 function onCall(handler, options = {}) {
   return onCallBase(options, (request) => {
@@ -236,7 +241,7 @@ export const deleteTest = onCall(async (request) => {
 // owner (createdBy) adds or removes people and deletes the test.
 // People without an account yet are invited by email: tests/{id}/sharing/data
 // .invitedEmails (the owner's list) and invites/{email}.testIds (claimed by
-// acceptInvites once they sign in with that email, verified). Both are
+// acceptTestInvites once they sign in with that email, verified). Both are
 // Admin-only (firestore.rules).
 function isEditor(test, auth) {
   return test.createdBy === auth?.token?.email || (test.editorIds ?? []).includes(auth?.uid);
@@ -360,7 +365,7 @@ export const manageEditors = onCall(
 // Called after sign-in: turns invites for this (verified) email into editor
 // access. Unverified emails can't claim them, or anyone could sign up with
 // someone else's address.
-export const acceptInvites = onCall(async (request) => {
+export const acceptTestInvites = onCall(async (request) => {
   const token = request.auth?.token;
   if (!token?.email || token.email_verified !== true) return { joined: 0 };
   const email = normalize(token.email);
@@ -434,7 +439,7 @@ export const emailTestLink = onCall(
 // with a link to their result. release: false hides them again. Only the
 // attempts named (or every finished one); later ones wait for the teacher
 // (nothing is released by itself).
-export const releaseScores = onCall(
+export const releaseTestScores = onCall(
   async (request) => {
     requireVerifiedMaker(request);
     const { testId, attemptIds, release = true } = request.data ?? {};

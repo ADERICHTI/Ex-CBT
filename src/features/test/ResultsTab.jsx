@@ -95,7 +95,7 @@ export default function ResultsTab() {
   }
 
   // Release scores: candidates see their result, the right answers and the
-  // explanations (functions → releaseScores). Results that come in later
+  // explanations (functions → releaseTestScores). Results that come in later
   // wait until the teacher releases them too.
   const unreleased = (subs ?? []).filter((s) => !s.released)
   async function confirmRelease() {
