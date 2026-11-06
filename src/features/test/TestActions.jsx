@@ -256,7 +256,7 @@ export default function TestActions() {
       {status === 'open' ? (
         <button
           type="button"
-          className="btn btn-outline test-publish"
+          className="btn btn-outline test-publish test-close"
           onClick={() => setConfirm('close')}
           disabled={busy}
           aria-label="Close test"

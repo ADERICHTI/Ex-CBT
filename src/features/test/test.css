@@ -1039,3 +1039,15 @@
     display: none;
   }
 }
+
+/* Close (stops candidates starting the test): red, like other stop actions. */
+.test-close {
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.test-close:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
