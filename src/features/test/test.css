@@ -60,7 +60,7 @@
 }
 
 .test-publish {
-  height: 36px;
+  height: 40px;
   padding: 0 16px;
   font-size: 14px;
 }
@@ -103,7 +103,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 36px;
+  height: 40px;
   padding: 0 16px;
   border-radius: var(--radius-pill);
   color: var(--text-muted);
@@ -566,7 +566,7 @@
 .results-search {
   flex: 1;
   max-width: 360px;
-  height: 36px;
+  height: 40px;
 }
 
 .results-who {
@@ -655,7 +655,7 @@
   }
 
   .test-publish {
-    width: 36px;
+    width: 40px;
     padding: 0;
   }
 }

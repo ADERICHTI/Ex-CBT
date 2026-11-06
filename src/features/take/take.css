@@ -396,6 +396,22 @@
   }
 }
 
+@media (max-width: 480px) {
+  .attempt-nav-grid {
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  }
+
+  .qnav {
+    height: 40px;
+  }
+
+  .attempt-timer,
+  .attempt-count {
+    height: 36px;
+    padding: 0 14px;
+  }
+}
+
 /* Preview as a candidate (TestInterface preview). */
 .preview-bar {
   margin: 0;

@@ -503,9 +503,25 @@
 }
 
 
-/* Narrow phones: one card per row, so titles have room. */
+/* Narrow phones: one card per row, so titles have room, and comfortable tap targets. */
 @media (max-width: 480px) {
   .tests-grid {
     grid-template-columns: 1fr;
+  }
+
+  .place {
+    height: 40px;
+    padding: 0 16px;
+    font-size: 14px;
+  }
+
+  .place-menu > .icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .card-star {
+    width: 40px;
+    height: 40px;
   }
 }
