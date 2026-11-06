@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Download, Search, Trash2 } from 'lucide-react'
+import { Download, EyeOff, Search, Send, Trash2 } from 'lucide-react'
 import ConfirmModal from '../../lib/ConfirmModal.jsx'
 import Spinner from '../../lib/Spinner.jsx'
 import { useToast } from '../../lib/useToast.jsx'
 import { downloadCsv, submissionsToCsv } from '../../services/csv.js'
 import { testStats } from '../../lib/resultStats.js'
-import { deleteSubmission, getAnswerKey, watchSubmissions } from '../../services/firestore.js'
+import { callReleaseScores, deleteSubmission, getAnswerKey, watchSubmissions } from '../../services/firestore.js'
 import AnalyseResultsDialog from '../ai/AnalyseResultsDialog.jsx'
 import { useAuth } from '../auth/useAuth.js'
 import ResultsSummary from './ResultsSummary.jsx'
@@ -30,6 +30,8 @@ export default function ResultsTab() {
   const [deleting, setDeleting] = useState(false)
   const [view, setView] = useState('summary') // summary | individual
   const [analysing, setAnalysing] = useState(false)
+  const [releasing, setReleasing] = useState(null) // 'release' | 'hide' (asking first)
+  const [releaseBusy, setReleaseBusy] = useState(false)
   const [answers, setAnswers] = useState(null) // the answer key's correct options
   const total = test.questions?.length ?? 0
 
@@ -92,6 +94,24 @@ export default function ResultsTab() {
     showToast('Saved to your downloads')
   }
 
+  // Release scores: candidates see their result, the right answers and the
+  // explanations (functions → releaseScores). Results that come in later
+  // wait until the teacher releases them too.
+  const unreleased = (subs ?? []).filter((s) => !s.released)
+  async function confirmRelease() {
+    setReleaseBusy(true)
+    try {
+      const release = releasing === 'release'
+      await callReleaseScores({ testId: test.id, attemptIds: (release ? unreleased : subs).map((s) => s.id), release })
+      showToast(release ? `Released to ${unreleased.length} ${unreleased.length === 1 ? 'candidate' : 'candidates'}` : 'Scores hidden')
+    } catch (err) {
+      showToast(err.message || 'Couldn’t do that. Please try again.')
+    } finally {
+      setReleaseBusy(false)
+      setReleasing(null)
+    }
+  }
+
   async function confirmDelete() {
     setDeleting(true)
     try {
@@ -129,6 +149,24 @@ export default function ResultsTab() {
 
   return (
     <div className="tab-stack">
+      <div className="results-release">
+        <p className="take-muted">
+          {unreleased.length === 0
+            ? 'Scores released: candidates can see their result, the right answers and your explanations.'
+            : unreleased.length === subs.length
+              ? 'Candidates can’t see their scores yet.'
+              : `${unreleased.length} new ${unreleased.length === 1 ? 'result hasn’t' : 'results haven’t'} been released yet.`}
+        </p>
+        {unreleased.length > 0 ? (
+          <button type="button" className="btn btn-primary btn-sm" onClick={() => setReleasing('release')}>
+            <Send size={15} /> Release scores ({unreleased.length})
+          </button>
+        ) : (
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => setReleasing('hide')}>
+            <EyeOff size={15} /> Hide scores
+          </button>
+        )}
+      </div>
       <div className="segmented results-switch" role="tablist" aria-label="Results view">
         <button type="button" role="tab" aria-selected={view === 'summary'} className={view === 'summary' ? 'active' : ''} onClick={() => setView('summary')}>
           Summary
@@ -222,6 +260,23 @@ export default function ResultsTab() {
         count={subs.length}
       />
 
+      <ConfirmModal
+        open={Boolean(releasing)}
+        label={releasing === 'hide' ? 'Hide scores' : 'Release scores'}
+        context={test.displayName || 'Untitled test'}
+        icon={releasing === 'hide' ? EyeOff : Send}
+        title={releasing === 'hide' ? 'Hide everyone’s scores?' : `Release scores to ${unreleased.length} ${unreleased.length === 1 ? 'candidate' : 'candidates'}?`}
+        message={
+          releasing === 'hide'
+            ? 'Candidates won’t see their result or the answers until you release them again. Emails already sent can’t be taken back.'
+            : 'Each one sees their score, which answers were right, the correct answers and your explanations, and gets an email with a link.'
+        }
+        confirmLabel={releasing === 'hide' ? 'Hide scores' : 'Release'}
+        tone={releasing === 'hide' ? 'danger' : 'primary'}
+        busy={releaseBusy}
+        onConfirm={confirmRelease}
+        onCancel={() => setReleasing(null)}
+      />
       <ConfirmModal
         open={Boolean(pending)}
         label="Delete result"

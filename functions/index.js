@@ -425,3 +425,75 @@ export const emailTestLink = onCall(
   },
   { secrets: [SMTP_PASS] },
 );
+
+// ── Release scores (as in PeraForm) ─────────────────────────
+// The owner or an editor releases finished attempts: each gets `review`
+// (per question, by position: the correct answer and the explanation,
+// copied from the owner-only answer key, so the candidate can read them in
+// their own result) and `released: true`, and the candidate gets an email
+// with a link to their result. release: false hides them again. Only the
+// attempts named (or every finished one); later ones wait for the teacher
+// (nothing is released by itself).
+export const releaseScores = onCall(
+  async (request) => {
+    requireVerifiedMaker(request);
+    const { testId, attemptIds, release = true } = request.data ?? {};
+    const { test } = await editableTest(testId, request);
+    const key = (await db.doc(`tests/${testId}/answerKey/data`).get()).data() ?? {};
+    const subs = db.collection(`tests/${testId}/submissions`);
+    const snaps = Array.isArray(attemptIds)
+      ? await Promise.all(attemptIds.filter((id) => typeof id === 'string' && id).slice(0, 500).map((id) => subs.doc(id).get()))
+      : (await subs.where('testTaken', '==', true).get()).docs;
+    const done = snaps.filter((s) => s.exists && s.data().testTaken);
+
+    const total = (test.questions ?? []).length;
+    const review = (test.questions ?? []).map((_, i) => ({
+      correct: String(key.answers?.[i] ?? ''),
+      explanation: String(key.explanations?.[i] ?? ''),
+    }));
+    // A batch holds at most 500 writes: save big classes in chunks.
+    for (let i = 0; i < done.length; i += 400) {
+      const batch = db.batch();
+      for (const s of done.slice(i, i + 400)) {
+        batch.update(
+          s.ref,
+          release
+            ? { released: true, releasedAt: FieldValue.serverTimestamp(), review, total }
+            : { released: false, releasedAt: FieldValue.delete(), review: FieldValue.delete() },
+        );
+      }
+      await batch.commit();
+    }
+    if (!release) return { released: 0, hidden: done.length };
+
+    const title = test.displayName || 'Untitled test';
+    const href = `${APP_URL}/test/${testId}/submitted`;
+    let emailed = 0;
+    for (const s of done) {
+      const d = s.data();
+      if (d.released || !d.userEmail) continue; // already told
+      const body = `Your result for “${title}” is ready: ${d.score ?? 0} out of ${total} (${total ? Math.round(((d.score ?? 0) / total) * 100) : 0}%). Open it to see which answers were right, with your teacher’s explanations.`;
+      try {
+        if (
+          await sendMail({
+            to: d.userEmail,
+            subject: `Your result: ${title}`,
+            text: `${body}\n\n${href}`,
+            html: emailHtml({
+              heading: 'Your result is ready',
+              body,
+              cta: 'See my result',
+              href,
+              footer: `You got this email because you took “${title}” on HyperCBT.`,
+            }),
+          })
+        )
+          emailed++;
+      } catch (err) {
+        logger.error('Result email failed', { testId, err: err.message });
+      }
+    }
+    return { released: done.length, emailed };
+  },
+  { secrets: [SMTP_PASS] },
+);

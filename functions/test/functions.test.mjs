@@ -88,6 +88,25 @@ await check('owner signed in unverified can’t delete the test', () =>
 await check('only the owner can delete the test', () =>
   expectError(fns.deleteTest.run(req(STUDENT, { testId: id })), 'permission-denied'),
 )
+// ── Release scores ──
+await db.doc(`tests/${id}/answerKey/data`).set({ answers: ['4', 'Paris'], explanations: ['2 + 2 = 4', 'Paris is France’s capital.'] }, { merge: true })
+await check('a candidate can’t release scores', () =>
+  expectError(fns.releaseScores.run(req(STUDENT, { testId: id })), 'not-found'))
+await check('owner releases: the result gets the review and is marked released', async () => {
+  const res = await fns.releaseScores.run(req(OWNER, { testId: id }))
+  equal(res.released, 1)
+  const sub = (await db.doc(`tests/${id}/submissions/s-1`).get()).data()
+  equal([sub.released, sub.total, sub.review], [true, 2, [
+    { correct: '4', explanation: '2 + 2 = 4' },
+    { correct: 'Paris', explanation: 'Paris is France’s capital.' },
+  ]])
+})
+await check('owner hides scores again', async () => {
+  equal(await fns.releaseScores.run(req(OWNER, { testId: id, release: false })), { released: 0, hidden: 1 })
+  const sub = (await db.doc(`tests/${id}/submissions/s-1`).get()).data()
+  equal([sub.released, sub.review], [false, undefined])
+})
+
 // ── Share window: invites, editors, emailing the link ──
 // (Uses the Auth emulator for getUserByEmail: FIREBASE_AUTH_EMULATOR_HOST.)
 const NEW = `new-${Date.now()}@example.com`

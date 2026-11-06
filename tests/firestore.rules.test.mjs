@@ -126,6 +126,8 @@ await check('editor can’t add editors directly', assertFails(updateDoc(doc(edi
 await check('owner can’t change editors directly either', assertFails(updateDoc(doc(owner, 'tests/s1'), { editorIds: [] })))
 await check('outsider can’t make themselves an editor', assertFails(updateDoc(doc(outsider, 'tests/s1'), { editorIds: ['outsider@example.com'] })))
 await check('editor can’t delete the test', assertFails(deleteDoc(doc(editorCtx, 'tests/s1'))))
+await check('a candidate loads their own result (released scores)', assertSucceeds(getDocs(query(collection(student, 'tests/s1/submissions'), where('userEmail', '==', STUDENT), where('testTaken', '==', true)))))
+await check('a candidate can’t load everyone’s results', assertFails(getDocs(query(collection(student, 'tests/s1/submissions'), where('testTaken', '==', true)))))
 await check('nobody reads pending invites from the app', assertFails(getDoc(doc(owner, 'tests/s1/sharing/data'))))
 await check('nobody reads invites/', assertFails(getDoc(doc(owner, 'invites/new@example.com'))))
 

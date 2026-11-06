@@ -285,3 +285,14 @@ export async function deleteSubmission(testId, attemptId) {
 export const callManageEditors = httpsCallable(functions, 'manageEditors')
 export const callEmailTestLink = httpsCallable(functions, 'emailTestLink')
 export const callAcceptInvites = httpsCallable(functions, 'acceptInvites')
+
+// Release scores (functions/index.js → releaseScores): the owner or an
+// editor shows candidates their result, answers and explanations.
+export const callReleaseScores = httpsCallable(functions, 'releaseScores')
+
+// A candidate's own finished attempt at a test (their result page). The
+// rules let them read only their own (userEmail).
+export function watchMySubmission(testId, email, onChange, onError) {
+  const q = query(collection(db, 'tests', testId, 'submissions'), where('userEmail', '==', email), where('testTaken', '==', true))
+  return onSnapshot(q, (snap) => onChange(snap.docs[0] ? { id: snap.docs[0].id, ...snap.docs[0].data() } : null), onError)
+}
