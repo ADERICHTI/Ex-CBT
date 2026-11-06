@@ -17,7 +17,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 20px var(--gutter);
+  padding: 12px var(--gutter);
 }
 
 /* Partial-width hairline - the wireframe's signature divider. */
@@ -144,8 +144,8 @@
   min-width: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  margin: 16px var(--gutter);
-  padding: clamp(20px, 3vw, 36px);
+  margin: 8px var(--gutter);
+  padding: clamp(16px, 2.2vw, 28px);
   border-radius: var(--radius-card);
   background: var(--surface-center);
 }
@@ -163,7 +163,7 @@
   grid-template-columns: var(--sidebar-w) 1fr;
   grid-template-rows: minmax(0, 1fr);
   gap: 16px;
-  padding: 16px var(--gutter);
+  padding: 8px var(--gutter);
   transition: grid-template-columns 0.4s var(--ease);
 }
 
@@ -343,7 +343,7 @@
 /* ── Footer ──────────────────────────────────────────────── */
 .footerbar {
   flex-shrink: 0;
-  padding: 14px var(--gutter);
+  padding: 10px var(--gutter);
   text-align: center;
   color: var(--text-muted);
   font-size: 12px;

@@ -82,7 +82,7 @@
 .test-page {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
   max-width: 820px;
   margin: 0 auto;
 }
@@ -1050,4 +1050,20 @@
 .test-close:hover:not(:disabled) {
   border-color: var(--danger);
   background: var(--danger-soft);
+}
+
+/* Results → Release scores bar. */
+.results-release {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 16px;
+  border-radius: var(--radius-card);
+  background: var(--fill);
+}
+
+.results-release .take-muted {
+  flex: 1 1 260px;
 }

@@ -2,8 +2,8 @@
 .take-card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: clamp(20px, 3vw, 32px);
+  gap: 12px;
+  padding: clamp(16px, 2.4vw, 24px);
   border-radius: var(--radius-card);
   background: var(--surface);
   box-shadow: var(--shadow);
@@ -18,7 +18,7 @@
 
 .take-center {
   max-width: 460px;
-  margin: clamp(16px, 8vh, 80px) auto;
+  margin: clamp(8px, 3vh, 32px) auto;
   align-items: center;
   text-align: center;
 }
@@ -67,9 +67,9 @@
 .start {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 14px;
   max-width: 460px;
-  margin: clamp(8px, 5vh, 56px) auto;
+  margin: 0 auto;
 }
 
 .start-head {
@@ -77,8 +77,8 @@
 }
 
 .start-head h1 {
-  margin: 0 0 8px;
-  font-size: 26px;
+  margin: 0 0 4px;
+  font-size: 22px;
   font-weight: 600;
   letter-spacing: -0.015em;
 }
@@ -102,7 +102,7 @@
   display: flex;
   gap: 10px;
   margin: 0;
-  padding: 12px 14px;
+  padding: 8px 12px;
   border-radius: var(--radius-control);
   background: var(--fill);
   color: var(--text-muted);
@@ -126,11 +126,11 @@
 .attempt {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   min-height: 100dvh;
   max-width: 1160px;
   margin: 0 auto;
-  padding: 16px clamp(12px, 3vw, 40px) 24px;
+  padding: 10px clamp(12px, 3vw, 32px) 16px;
 }
 
 .attempt-bar {
@@ -464,4 +464,15 @@
 
 .preview-rows li.is-wrong span {
   color: var(--danger);
+}
+
+/* A candidate's released result (Submission.jsx). */
+.result-page {
+  margin: 0 auto;
+}
+
+.result-why {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-style: normal;
 }
