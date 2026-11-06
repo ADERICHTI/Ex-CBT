@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Link, NavLink, Outlet, useParams } from 'react-router-dom'
+import { Link, Outlet, useParams } from 'react-router-dom'
 import { BarChart3, ListChecks, Settings, Users } from 'lucide-react'
 import AppShell from '../../lib/AppShell.jsx'
 import Spinner from '../../lib/Spinner.jsx'
@@ -10,7 +10,7 @@ import { useTestEditor } from './testContext.js'
 import './test.css'
 
 // Frame for /tests/:testId/* - the top bar holds the title and the test's
-// actions; the four tabs sit centred under it (HyperCBT has no sidebar).
+// actions; the four tabs are in the sidebar, as in PeraForm.
 export default function TestLayout() {
   const { testId } = useParams()
   return (
@@ -61,17 +61,13 @@ function TestFrame({ testId }) {
   ]
 
   return (
-    <AppShell center={ready ? <TestTitleField /> : null} actions={ready ? <TestActions /> : null}>
+    <AppShell
+      nav={tabs.map((t) => ({ ...t, to: `/tests/${testId}/${t.to}` }))}
+      center={ready ? <TestTitleField /> : null}
+      actions={ready ? <TestActions /> : null}
+    >
       {ready ? (
         <div className="test-page">
-          <nav className="test-tabs" aria-label="Test sections">
-            {tabs.map(({ to, label, icon: Icon }) => (
-              <NavLink key={to} to={`/tests/${testId}/${to}`} className="test-tab" aria-label={label}>
-                <Icon size={16} />
-                <span>{label}</span>
-              </NavLink>
-            ))}
-          </nav>
           <Outlet />
         </div>
       ) : (

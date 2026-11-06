@@ -87,42 +87,6 @@
   margin: 0 auto;
 }
 
-.test-tabs {
-  position: sticky;
-  top: calc(-1 * clamp(20px, 3vw, 36px));
-  z-index: 5;
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-  margin: calc(-1 * clamp(20px, 3vw, 36px)) 0 0;
-  padding: 12px 0;
-  background: var(--bg);
-}
-
-.test-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: var(--radius-pill);
-  color: var(--text-muted);
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-  transition: background 0.2s var(--ease), color 0.2s var(--ease);
-}
-
-.test-tab:hover {
-  background: var(--fill);
-  color: var(--text);
-}
-
-.test-tab.active {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
 /* ── Questions ───────────────────────────────────────────── */
 .questions {
   display: flex;
@@ -392,21 +356,19 @@
   color: var(--danger);
 }
 
-/* Questions + PeraForm's floating toolbar. The toolbar's column is 0 wide so
-   the questions keep the page width; the toolbar sits just outside them. */
+/* Questions + PeraForm's floating toolbar in its own column beside them. */
 .q-builder {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
 }
 
 .questions-toolbar {
   position: sticky;
-  top: 72px;
+  top: 0;
   align-self: start;
   display: flex;
   flex-direction: column;
-  width: max-content;
-  margin-left: 16px;
   padding: 6px;
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
@@ -433,8 +395,8 @@
   background: var(--accent-soft);
 }
 
-/* Phones and narrow windows: a slim bar along the bottom, as in PeraForm. */
-@media (max-width: 1000px) {
+/* Phones: a slim bar along the bottom, as in PeraForm. */
+@media (max-width: 767px) {
   .q-builder {
     grid-template-columns: minmax(0, 1fr);
     padding-bottom: 80px;
@@ -448,7 +410,6 @@
     z-index: 5;
     flex-direction: row;
     gap: 2px;
-    margin: 0;
     padding: 4px;
     border-radius: var(--radius-pill);
     transform: translateX(50%);
@@ -697,14 +658,6 @@
 
 /* ── Smaller screens ─────────────────────────────────────── */
 @media (max-width: 767px) {
-  .test-tab span {
-    display: none;
-  }
-
-  .test-tab {
-    padding: 0 14px;
-  }
-
   .test-actions .status,
   .save-state {
     display: none;
