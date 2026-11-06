@@ -392,10 +392,85 @@
   color: var(--danger);
 }
 
-.questions-add {
+/* Questions + PeraForm's floating toolbar. The toolbar's column is 0 wide so
+   the questions keep the page width; the toolbar sits just outside them. */
+.q-builder {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 0;
+}
+
+.questions-toolbar {
+  position: sticky;
+  top: 72px;
+  align-self: start;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  width: max-content;
+  margin-left: 16px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.questions-first {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
+  padding: 18px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-card);
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.questions-first:hover {
+  background: var(--accent-soft);
+}
+
+/* Phones and narrow windows: a slim bar along the bottom, as in PeraForm. */
+@media (max-width: 1000px) {
+  .q-builder {
+    grid-template-columns: minmax(0, 1fr);
+    padding-bottom: 80px;
+  }
+
+  .questions-toolbar {
+    position: fixed;
+    top: auto;
+    right: 50%;
+    bottom: 20px;
+    z-index: 5;
+    flex-direction: row;
+    gap: 2px;
+    margin: 0;
+    padding: 4px;
+    border-radius: var(--radius-pill);
+    transform: translateX(50%);
+  }
+
+  .questions-toolbar .icon-btn {
+    width: 48px;
+    height: 48px;
+    color: var(--accent);
+  }
+}
+
+/* Phones: the hint takes its own line so the tools keep their room. */
+@media (max-width: 480px) {
+  .q-foot {
+    flex-wrap: wrap;
+  }
+
+  .q-hint {
+    order: -1;
+    flex-basis: 100%;
+  }
 }
 
 /* ── Panels (Candidates, Results, Settings) ──────────────── */
