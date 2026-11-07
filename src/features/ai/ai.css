@@ -668,6 +668,13 @@
   overflow-y: auto;
 }
 
+/* Its parts keep their full height and the body scrolls. Without this, a
+   long result (min-height set) was squashed to 160px and spilled over the
+   buttons and note below it. */
+.ai-create-body > * {
+  flex-shrink: 0;
+}
+
 .dawn-glow,
 .dawn-edge {
   position: absolute;
