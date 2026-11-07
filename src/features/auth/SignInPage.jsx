@@ -11,6 +11,7 @@ import {
   signInWithEmail,
   signInWithGoogle,
 } from './authActions.js'
+import { useGoogleOneTap } from './oneTap.js'
 import { isSignedIn, useAuth } from './useAuth.js'
 import Spinner from '../../lib/Spinner.jsx'
 import GoogleMark from '../../lib/GoogleMark.jsx'
@@ -63,6 +64,10 @@ export default function SignInPage() {
     if (remembered) run(() => finishEmailLink(remembered))
     // Once, when the page opens from a link.
   }, [linkOpened])
+
+  // Google's account list pops up by itself (One Tap), as in PeraForm; not
+  // while resetting a password.
+  useGoogleOneTap({ enabled: !loading && !isSignedIn(user) && mode !== 'reset' })
 
   if (loading) return <Spinner fill="page" />
   if (isSignedIn(user)) return <Navigate to={next} replace />

@@ -60,6 +60,8 @@ export function resetPassword(email) {
 }
 
 export function signOut() {
+  // Otherwise Google's One Tap (auto-select) signs them straight back in.
+  window.google?.accounts?.id?.disableAutoSelect()
   return firebaseSignOut(getFirebaseAuth())
 }
 
